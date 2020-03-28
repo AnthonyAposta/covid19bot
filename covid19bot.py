@@ -38,19 +38,47 @@ def recebendoMsg(msg):
     if comandos[0] == '/start':
         bot.sendMessage(chat_id, f"Hello {usr_name}, I can show you the stats of the covid19 from all around the world.")
 ##########################################
-    if comandos[0] == '/graph':
+    if comandos[0] == '/chart':
         bot.sendChatAction(chat_id, 'upload_photo')
         
         if len(comandos) == 2:
             countryID = DADOS.ids.index(comandos[1])
             
             try:
-                bot.sendPhoto(chat_id, open(f"charts/test_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+                bot.sendPhoto(chat_id, open(f"charts/chart_{DADOS.locations[countryID]['country_code']}.png",'rb'))
             except:
                 Chart(DADOS.locations[countryID])
-                bot.sendPhoto(chat_id, open(f"charts/test_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+                bot.sendPhoto(chat_id, open(f"charts/chart_{DADOS.locations[countryID]['country_code']}.png",'rb'))
         else:
             
+            bot.sendPhoto(chat_id, open("world.png",'rb'))
+##########################################
+    if comandos[0] == '/chart1w':
+        bot.sendChatAction(chat_id, 'upload_photo')
+        
+        if len(comandos) == 2:
+            countryID = DADOS.ids.index(comandos[1])
+            
+            try:
+                bot.sendPhoto(chat_id, open(f"charts/chart1w_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+            except:
+                Chart(DADOS.locations[countryID], '1w')
+                bot.sendPhoto(chat_id, open(f"charts/chart1w_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+        else:
+            bot.sendPhoto(chat_id, open("world.png",'rb'))
+##########################################
+    if comandos[0] == '/chart1m':
+        bot.sendChatAction(chat_id, 'upload_photo')
+        
+        if len(comandos) == 2:
+            countryID = DADOS.ids.index(comandos[1])
+            
+            try:
+                bot.sendPhoto(chat_id, open(f"charts/chart1m_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+            except:
+                Chart(DADOS.locations[countryID], '1m')
+                bot.sendPhoto(chat_id, open(f"charts/chart1m_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+        else:
             bot.sendPhoto(chat_id, open("world.png",'rb'))
 ##########################################
     if comandos[0] == '/info':
