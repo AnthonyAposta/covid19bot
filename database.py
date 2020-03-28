@@ -25,6 +25,7 @@ class Database:
 
     def populate_charts(self):
 
+        
         for i in range(len(self.ids)):
             Chart(self.locations[i])
 
@@ -42,7 +43,7 @@ class Chart:
         self.ax  = self.fig.add_subplot(1,1,1)
         self.chart = self.linear_acumulativo()
         
-        if self.period == None
+        if self.period == None:
             plt.savefig(f"charts/chart_{self.Locations['country_code']}",bbox_inches='tight')
         else:
             plt.savefig(f"charts/chart{self.period}_{self.Locations['country_code']}",bbox_inches='tight')
@@ -52,13 +53,17 @@ class Chart:
     def get_data(self):
         """ pega os dados de infectados vs dias para o pais 'lugar' """
         
-        N = int(self.period[0])
-        if self.period[1] == 'w':
-            N = 4*N
-        elif self.period == 'm'
-            N = N*31
+        if self.period != None
+            
+            N = int(self.period[0])
+            if self.period[1] == 'w':
+                N = 4*N
+            elif self.period[1] == 'm':
+                N = N*31
+            else:
+                pass
         else:
-            N = 0
+            N = 0 
 
         data = self.Locations['timelines']['confirmed']['timeline']
         
