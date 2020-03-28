@@ -30,11 +30,15 @@ def recebendoMsg(msg):
 ##########################################
     if msg['text'].split(' ',1)[0] == '/graph':
         bot.sendChatAction(chat_id, 'upload_photo')
+        
         if len(msg['text'].split(' ',1)) == 2:
-            countryID=DADOS.ids.index(msg['text'].split(' ',1)[1])
-            Chart(DADOS.locations, countryID)
+            countryID = DADOS.ids.index(msg['text'].split(' ',1)[1])
             
-            bot.sendPhoto(chat_id, open(f"test_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+            try:
+                bot.sendPhoto(chat_id, open(f"charts/test_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+            except:
+                Chart(DADOS.locations[countryID])
+                bot.sendPhoto(chat_id, open(f"charts/test_{DADOS.locations[countryID]['country_code']}.png",'rb'))
         else:
             
             bot.sendPhoto(chat_id, open("world.png",'rb'))

@@ -6,55 +6,55 @@ import COVID19Py
 
 class Database:
 
-	def __init__(self):
+    def __init__(self):
 
-		covid19 = COVID19Py.COVID19(data_source="jhu")
+        covid19 = COVID19Py.COVID19(data_source="jhu")
+        self.allData = covid19.getAll(timelines=True)
+        self.total = self.allData['latest']
+        self.locations = self.allData['locations']
+        self.ids = [country['country_code'] for country in self.locations]
 
-		self.allData = covid19.getAll(timelines=True)
-		self.total = self.allData['latest']
-		self.locations = self.allData['locations']
-		self.ids = [country['country_code'] for country in self.locations]
 
+    def update_database(self):
 
-	def update_database(self):
+        covid19 = COVID19Py.COVID19(data_source="jhu")
+        self.allData = covid19.getAll()
+        self.total = self.allData['latest']
+        self.locations = self.allData['locations']
+        self.ids = [country['country_code'] for country in self.locations]
 
-		covid19 = COVID19Py.COVID19(data_source="jhu")
+    def populate_charts(self):
 
-		self.allData = covid19.getAll()
-		self.total = self.allData['latest']
-		self.locations = self.allData['locations']
-		self.ids = [country['country_code'] for country in self.locations]
+        for i in range(len(self.ids)):
+            Chart(self.locations[i])
 
 
 class Chart:
         
-        """ usa os argumentos para gerar um grafico """
-        def __init__(self, Locations, index):
-                
-                self.Locations = Locations
+    """ usa os argumentos para gerar um grafico """
+    def __init__(self, Locations_indx):
 
-                index = int(index)
+        self.Locations = Locations_indx
+        plt.style.use('ggplot')
 
-                plt.style.use('ggplot')
+        self.fig = plt.figure(num=1, figsize = (10., 8.))
+        self.ax  = self.fig.add_subplot(1,1,1)
 
-                self.fig = plt.figure(num=1, figsize = (10., 8.))
-                self.ax  = self.fig.add_subplot(1,1,1)
+        self.chart = self.linear_acumulativo()
+        plt.savefig(f"charts/test_{self.Locations['country_code']}",bbox_inches='tight')
+        plt.clf()
 
-                self.chart = self.linear_acumulativo(index)
-                plt.savefig(f"test_{Locations[index]['country_code']}",bbox_inches='tight')
-                plt.clf()
+    def get_data(self):
+        """ pega os dados de infectados vs dias para o pais 'lugar' """
+        data = self.Locations['timelines']['confirmed']['timeline']
 
-        def get_data(self, index):
-                """ pega os dados de infectados vs dias para o pais 'lugar' """
-                data = self.Locations[index]['timelines']['confirmed']['timeline']
+        return np.array([dia[2:10] for dia in data]), np.array([data[dia] for dia in data])
 
-                return np.array([dia[2:10] for dia in data]), np.array([data[dia] for dia in data])
-
-        def linear_acumulativo(self, index):
-                """ gera o grafico acumulativo para o 'lugar'  """
-                dias, infectados_acumulado = self.get_data(index)
-                self.ax.bar(dias, infectados_acumulado)
-                self.ax.plot()
-                plt.xticks(rotation=90, size='medium')
+    def linear_acumulativo(self):
+        """ gera o grafico acumulativo para o 'lugar'  """
+        dias, infectados_acumulado = self.get_data()
+        self.ax.bar(dias, infectados_acumulado)
+        self.ax.plot()
+        plt.xticks(rotation=90, size='medium')
 
 
