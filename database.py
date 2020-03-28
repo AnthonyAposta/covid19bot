@@ -32,23 +32,37 @@ class Database:
 class Chart:
         
     """ usa os argumentos para gerar um grafico """
-    def __init__(self, Locations_indx):
+    def __init__(self, Locations_indx, period=None):
 
+        self.period = period
         self.Locations = Locations_indx
         plt.style.use('ggplot')
 
         self.fig = plt.figure(num=1, figsize = (10., 8.))
         self.ax  = self.fig.add_subplot(1,1,1)
-
         self.chart = self.linear_acumulativo()
-        plt.savefig(f"charts/test_{self.Locations['country_code']}",bbox_inches='tight')
+        
+        if self.period == None
+            plt.savefig(f"charts/chart_{self.Locations['country_code']}",bbox_inches='tight')
+        else:
+            plt.savefig(f"charts/chart{self.period}_{self.Locations['country_code']}",bbox_inches='tight')
+        
         plt.clf()
 
     def get_data(self):
         """ pega os dados de infectados vs dias para o pais 'lugar' """
-        data = self.Locations['timelines']['confirmed']['timeline']
+        
+        N = int(self.period[0])
+        if self.period[1] == 'w':
+            N = 4*N
+        elif self.period == 'm'
+            N = N*31
+        else:
+            N = 0
 
-        return np.array([dia[2:10] for dia in data]), np.array([data[dia] for dia in data])
+        data = self.Locations['timelines']['confirmed']['timeline']
+        
+        return np.array([dia[2:10] for dia in data][-N:]), np.array([data[dia] for dia in data][-N:])
 
     def linear_acumulativo(self):
         """ gera o grafico acumulativo para o 'lugar'  """
