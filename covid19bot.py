@@ -38,7 +38,7 @@ def recebendoMsg(msg):
     if comandos[0] == '/start':
         bot.sendMessage(chat_id, f"Hello {usr_name}, I can show you the stats of the covid19 from all around the world.")
 ##########################################
-    if msg['text'].split(' ',1)[0] == '/graph':
+    if comandos[0] == '/graph':
         bot.sendChatAction(chat_id, 'upload_photo')
         
         if len(comandos) == 2:
