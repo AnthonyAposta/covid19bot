@@ -1,7 +1,7 @@
 # TODO or ideas
 # - [x] /info
 #   - [ ] top countries infected and deltas in /info
-# - [ ] /graph
+# - [x] /graph
 # - [ ] /help
 # - [ ] /map
 # - [ ] /daily_subscribe
@@ -9,6 +9,8 @@
 
 import COVID19Py
 import telepot
+from telepot.loop import MessageLoop
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import os
 import subprocess
 import time
@@ -22,68 +24,66 @@ DADOS = Database()
 print("Ready: Database updated")
 
 def process_msg(msg):
-
     usr_name = msg['from']['first_name']
     comandos = msg['text'].split(' ',1)
 
     return usr_name, comandos
 
-def recebendoMsg(msg):
-    content_type, chat_type, chat_id = telepot.glance(msg)
 
+def on_callback_query(msg):
+    query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+    bot.sendChatAction(from_id, 'upload_photo')
+
+    days          = query_data.split(' ',1)[0]
+    countryID_str = query_data.split(' ',1)[1]
+    if countryID_str != None:
+        countryID = int(countryID_str)
+        try:
+            bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+        except:
+            Chart(DADOS.locations[countryID], days)
+            bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+    else:
+        #try:
+        bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
+
+        #except:
+            #Chart(DADOS.locations[countryID], days)
+            #bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
+            
+    
+def on_chat_message(msg):
+    content_type, chat_type, chat_id = telepot.glance(msg)
     usr_name, comandos = process_msg(msg)
 
-    print(chat_id, f"{usr_name}:, {msg['text']}")
+    print(chat_id, f"{usr_name}: {msg['text']}")
 ##########################################
     if comandos[0] == '/start':
         bot.sendMessage(chat_id, f"Hello {usr_name}, I can show you the stats of the covid19 from all around the world.")
 ##########################################
     if comandos[0] == '/chart':
-        bot.sendChatAction(chat_id, 'upload_photo')
-        
+        countryID = DADOS.ids.index(comandos[1].upper())
+
         if len(comandos) == 2:
-            countryID = DADOS.ids.index(comandos[1])
-            
-            try:
-                bot.sendPhoto(chat_id, open(f"charts/chart_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-            except:
-                Chart(DADOS.locations[countryID])
-                bot.sendPhoto(chat_id, open(f"charts/chart_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+            bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
+                            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID}"),
+                                 InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID}")],
+                                [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID}"),
+                                 InlineKeyboardButton(text="All days since first case", callback_data=f"0  {countryID}")]]))
         else:
-            bot.sendPhoto(chat_id, open("world.png",'rb'))
-##########################################
-    if comandos[0] == '/chart1w':
-        bot.sendChatAction(chat_id, 'upload_photo')
+            bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
+                            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                [InlineKeyboardButton(text="10 days",                   callback_data=f"10 None"),
+                                 InlineKeyboardButton(text="30 days",                   callback_data=f"30 None")],
+                                [InlineKeyboardButton(text="60 days",                   callback_data=f"60 None"),
+                                 InlineKeyboardButton(text="All days since first case", callback_data=f"0  None")]]))
         
-        if len(comandos) == 2:
-            countryID = DADOS.ids.index(comandos[1])
-            
-            try:
-                bot.sendPhoto(chat_id, open(f"charts/chart1w_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-            except:
-                Chart(DADOS.locations[countryID], '1w')
-                bot.sendPhoto(chat_id, open(f"charts/chart1w_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-        else:
-            bot.sendPhoto(chat_id, open("world.png",'rb'))
-##########################################
-    if comandos[0] == '/chart1m':
-        bot.sendChatAction(chat_id, 'upload_photo')
-        
-        if len(comandos) == 2:
-            countryID = DADOS.ids.index(comandos[1])
-            
-            try:
-                bot.sendPhoto(chat_id, open(f"charts/chart1m_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-            except:
-                Chart(DADOS.locations[countryID], '1m')
-                bot.sendPhoto(chat_id, open(f"charts/chart1m_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-        else:
-            bot.sendPhoto(chat_id, open("world.png",'rb'))
 ##########################################
     if comandos[0] == '/info':
         bot.sendChatAction(chat_id, 'typing')
         if len(comandos) == 2: # Filtered by country code
-            countryID=DADOS.ids.index(comandos[1])
+            countryID=DADOS.ids.index(comandos[1].upper())
             
             bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
             *{DADOS.locations[countryID]['country']}*\
@@ -96,7 +96,8 @@ def recebendoMsg(msg):
             \n- Total deaths until today: {DADOS.total['deaths']}")
 ##########################################
 
-bot.message_loop(recebendoMsg)
+MessageLoop(bot, {'chat': on_chat_message,
+                  'callback_query': on_callback_query}).run_as_thread()
 
-while True:
-    pass
+while 1:
+    time.sleep(10)

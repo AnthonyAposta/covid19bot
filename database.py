@@ -32,7 +32,7 @@ class Database:
 class Chart:
         
     """ usa os argumentos para gerar um grafico """
-    def __init__(self, Locations_indx, period=''):
+    def __init__(self, Locations_indx, period=None):
 
         self.period = period
         self.Locations = Locations_indx
@@ -52,13 +52,10 @@ class Chart:
     def get_data(self):
         """ pega os dados de infectados vs dias para o pais 'lugar' """
         
-        N = int(self.period[0])
-        if self.period[1] == 'w':
-            N = 4*N
-        elif self.period == 'm':
-            N = N*31
+        if self.period != None:
+            N = int(self.period)
         else:
-            N = 0
+            N = 0 
 
         data = self.Locations['timelines']['confirmed']['timeline']
         
