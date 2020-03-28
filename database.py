@@ -32,7 +32,7 @@ class Database:
 class Chart:
         
     """ usa os argumentos para gerar um grafico """
-    def __init__(self, Locations_indx, period=None):
+    def __init__(self, Locations_indx, period=''):
 
         self.period = period
         self.Locations = Locations_indx
@@ -42,7 +42,7 @@ class Chart:
         self.ax  = self.fig.add_subplot(1,1,1)
         self.chart = self.linear_acumulativo()
         
-        if self.period == None
+        if self.period == None:
             plt.savefig(f"charts/chart_{self.Locations['country_code']}",bbox_inches='tight')
         else:
             plt.savefig(f"charts/chart{self.period}_{self.Locations['country_code']}",bbox_inches='tight')
@@ -55,7 +55,7 @@ class Chart:
         N = int(self.period[0])
         if self.period[1] == 'w':
             N = 4*N
-        elif self.period == 'm'
+        elif self.period == 'm':
             N = N*31
         else:
             N = 0
