@@ -2,7 +2,8 @@
 # - [x] /info
 #   - [ ] top countries infected and deltas in /info
 # - [x] /graph
-# - [ ] /help
+# - [x] /list
+# - [x] /help
 # - [ ] /map
 # - [ ] /daily_subscribe
 # - [ ] /news
@@ -70,11 +71,11 @@ def on_chat_message(msg):
                 name += comandos[i].upper()
 
             try:
-                bot.sendPhoto(from_id, open(f"charts/chart_{name}.png",'rb'))
+                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
             except:
                 Chart([DADOS.locations[i] for i in countryID])
-                bot.sendPhoto(from_id, open(f"charts/chart_{name}.png",'rb'))
-        if len(comandos) == 2:
+                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        elif len(comandos) == 2:
             countryID = DADOS.ids.index(comandos[1].upper())
 
             bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
@@ -107,10 +108,22 @@ def on_chat_message(msg):
             \n- Total confirmed cases until today: {DADOS.total['confirmed']}\
             \n- Total deaths until today: {DADOS.total['deaths']}")
 ##########################################
+    if comandos[0] == '/list':
+        bot.sendChatAction(chat_id, 'typing')
+
+        message = []
+        for location in DADOS.locations:
+            string = f"{location['country_code']}:\t{location['country']}"
+            if string not in message:
+                message.append(string)
+                print(f"{location['country_code']}:\t{location['country']}")
+
+        bot.sendMessage(chat_id, text="Countries list:\n"+'\n'.join(message))
+##########################################
     if comandos[0] == '/help':
         bot.sendChatAction(chat_id, 'typing')
             
-        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands are:*\n\n/help - to see this message\n\n/info <country code> - show the updated informations and stats for the covid19 for a specific country, default is information for the entirely world\n\n/chart <country code 1> <country code 2> ... - show a chart of the evolution of covid19 from the last days, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparative chart of the two countries.")
+        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands are:*\n\n\n/help - to see this message\n\n/info <country code> - show the updated informations and stats for the covid19 for a specific country, default is information for the entirely world\n\n/chart <country code 1> <country code 2> ... - show a chart of the evolution of covid19 from the last days, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparative chart of the two countries\n\n/list - show the available countries and their respective code")
 ##########################################
 
 MessageLoop(bot, {'chat': on_chat_message,
