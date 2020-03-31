@@ -1,10 +1,12 @@
 ##### TODO or ideas #####
+# - [x] Bot answer to any command: "Command not found. See /help."
 # - [ ] top countries infected and deltas in /info
+# - [x] /info more than one country
+# - [ ] /chart <nothing>: make world chart
 # - [ ] /map
 # - [ ] /daily_subscribe
 # - [ ] /news
-# - [ ] Comment code
-# - [ ] Bot answer to any command: "Command not found. See /help."
+# - [x] Comment code
 # - [x] /info
 # - [x] /graph
 # - [x] /list
@@ -44,15 +46,13 @@ def on_callback_query(msg):
     countryID_str = query_data.split(' ')[1]
     if countryID_str != None:
         countryID = int(countryID_str)
+        countryCode = DADOS.locations[countryID]['country_code']
+        
         Chart([DADOS.locations[countryID]], days)
-        bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+        bot.sendPhoto(from_id, open(f"charts/chart{days}_{countryCode}.png",'rb'))
     else:
-        #try:
+        #Chart(DADOS.locations[countryID], days)
         bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
-
-        #except:
-            #Chart(DADOS.locations[countryID], days)
-            #bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
 
             
 # Send a message asking from how many days the user want to see in the chart, showing a inline keyboard
@@ -63,7 +63,103 @@ def show_date_keyboard(chat_id, countryID):
         [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID}"),
          InlineKeyboardButton(text="All days since first case", callback_data=f"0  {countryID}")]]))
 
+
+
+######################### BOT COMMANDS ###########################
+
+# show a welcome message and init the bot 
+def start(chat_id, msg):
+    usr_name, comandos = process_msg(msg)
+
+    bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statistics about COVID-19. type /help for a guide")
+
     
+# make a graphics
+def chart(chat_id, msg):
+    usr_name, comandos = process_msg(msg)
+    
+    if len(comandos) > 2: # if the user pass more than two arguments to chart
+        countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+
+        # make a string with the country codes
+        name = 'compare_'
+        for i in range(1,len(comandos)):
+            name += comandos[i].upper()
+            
+        try: # try send the chart if it is generated
+            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        except: # if its not generated yet
+            Chart([DADOS.locations[i] for i in countryID])
+            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+    elif len(comandos) == 2: # if the user pass just one argument (country)
+        countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]    
+        show_date_keyboard(chat_id, countryID)
+    else:
+        show_date_keyboard(chat_id)
+
+        
+# show informations
+def info(chat_id, msg):
+    usr_name, comandos = process_msg(msg)
+    
+    bot.sendChatAction(chat_id, 'typing')
+    
+    if len(comandos) > 2: # if the user pass more than two countries
+        countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+
+        message = []
+        for i in countryID:
+            message.append(f"*{DADOS.locations[i]['country']}*\
+            \n- Total confirmed cases: {DADOS.locations[i]['latest']['confirmed']}\
+            \n- Total deaths: {DADOS.locations[i]['latest']['deaths']}")
+            
+        bot.sendMessage(chat_id, parse_mode='Markdown', text='\n\n'.join(message))
+    
+    elif len(comandos) == 2: # Filtered by country code
+        countryID=np.where(DADOS.ids == comandos[1].upper())[0][0]
+        
+        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+        *{DADOS.locations[countryID]['country']}*\
+        \n- Total confirmed cases: {DADOS.locations[countryID]['latest']['confirmed']}\
+        \n- Total deaths: {DADOS.locations[countryID]['latest']['deaths']}")
+        
+    else: # World total cases
+        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+        *World*\
+        \n- Total confirmed cases: {DADOS.total['confirmed']}\
+        \n- Total deaths: {DADOS.total['deaths']}")
+
+
+# show a list of all the countries available
+def list_countries(chat_id, msg):
+    usr_name, comandos = process_msg(msg)
+
+    bot.sendChatAction(chat_id, 'typing')
+    
+    message = []
+    for location in DADOS.locations:
+        string = f"{location['country_code']}:\t{location['country']}"
+        if string not in message:
+            message.append(string)
+
+    bot.sendMessage(chat_id, text="Countries list:\n"+'\n'.join(message))
+
+
+# help message
+def help_msg(chat_id, msg):
+    usr_name, comandos = process_msg(msg)
+    
+    bot.sendChatAction(chat_id, 'typing')
+            
+    bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands is:*\n\n\n\
+    /help - to see this message\n\n\
+    /info <country code 1> <country code 2> ... - shows the latest informations and stats for the covid19 for a set of specific countries. By default, the global status is shown\n\n\
+    /chart <country code 1> <country code 2> ... - deploy a time evolution chart of covid19, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparison between selected countries\n\n\
+    /list - shows the available countries and their respective code")
+
+###################################################################
+
+
 # To receive and take action depending on the message or command
 def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
@@ -71,62 +167,25 @@ def on_chat_message(msg):
 
     # show message send to bot
     print(chat_id, f"{usr_name}: {msg['text']}")
-##########################################
+    
     if comandos[0] == '/start':
-        bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statistics about COVID-19. type /help for a guide")
-##########################################
-    if comandos[0] == '/chart':
-        if len(comandos) > 2: # if the user pass more than two arguments to chart
-            countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+        start(chat_id, msg)
 
-            # make a string with the country codes
-            name = 'compare_'
-            for i in range(1,len(comandos)):
-                name += comandos[i].upper()
-
-            try: # try send the chart if it is generated
-                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
-            except: # if its not generated yet
-                Chart([DADOS.locations[i] for i in countryID])
-                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
-        elif len(comandos) == 2: # if the user pass just one argument (country)
-            countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]    
-            show_date_keyboard(chat_id, countryID)
-        else:
-            show_date_keyboard(chat_id)
+    elif comandos[0] == '/chart':
+        chart(chat_id, msg)
         
-##########################################
-    if comandos[0] == '/info':
-        bot.sendChatAction(chat_id, 'typing')
-        if len(comandos) == 2: # Filtered by country code
-            countryID=np.where(DADOS.ids == comandos[1].upper())[0][0]
-            
-            bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
-            *{DADOS.locations[countryID]['country']}*\
-            \n- Total confirmed cases: {DADOS.locations[countryID]['latest']['confirmed']}\
-            \n- Total deaths: {DADOS.locations[countryID]['latest']['deaths']}")
-        else: # World total cases
-            bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
-            *World*\
-            \n- Total confirmed cases: {DADOS.total['confirmed']}\
-            \n- Total deaths: {DADOS.total['deaths']}")
-##########################################
-    if comandos[0] == '/list':
-        bot.sendChatAction(chat_id, 'typing')
+    elif comandos[0] == '/info':
+        info(chat_id, msg)
+        
+    elif comandos[0] == '/list':
+        list_countries(chat_id, msg)
+        
+    elif comandos[0] == '/help':
+        help_msg(chat_id, msg)
 
-        message = []
-        for location in DADOS.locations:
-            string = f"{location['country_code']}:\t{location['country']}"
-            if string not in message:
-                message.append(string)
-
-        bot.sendMessage(chat_id, text="Countries list:\n"+'\n'.join(message))
-##########################################
-    if comandos[0] == '/help':
+    else:
         bot.sendChatAction(chat_id, 'typing')
-            
-        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands is:*\n\n\n/help - to see this message\n\n/info <country code> - shows the latest informations and stats for the covid19 for a specific country. By default, the global status is shown\n\n/chart <country code 1> <country code 2> ... - deploy a time evolution chart of covid19, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparison between selected countries \n\n/list - shows the available countries and their respective code")
-##########################################
+        bot.sendMessage(chat_id, parse_mode='Markdown', text="Command not found. Please, see the available option in /help.")
 
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
