@@ -2,3 +2,4 @@ numpy
 matplotlib
 COVID19Py
 telepot
+requests
