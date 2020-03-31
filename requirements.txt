@@ -1,1 +1,4 @@
-numpy,matplotlib.pyplot, COVID19Py, telepot
+numpy
+matplotlib.pyplot
+COVID19Py
+telepot
