@@ -128,4 +128,3 @@ class Chart:
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
 
-
