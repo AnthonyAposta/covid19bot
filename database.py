@@ -11,8 +11,26 @@ class Database:
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
-        self.locations = self.allData['locations']
-        self.ids = [country['country_code'] for country in self.locations]
+        self.locations = np.array(self.allData['locations'])
+        self.ids = np.array([country['country_code'] for country in self.locations])
+
+        for _ in range(len(self.ids)):
+            for ID in self.ids:
+                indx = np.where(self.ids == ID)[0]
+                
+                if len(indx) > 1:
+                    base = self.locations[indx[0]]
+
+                    for i in indx[1:]:
+                        for dia in self.locations[i]['timelines']['confirmed']['timeline']:
+                            base['timelines']['confirmed']['timeline'][dia] += self.locations[i]['timelines']['confirmed']['timeline'][dia]
+
+                    self.locations[indx[0]] = base
+                    break
+            
+            self.locations = np.delete(self.locations, indx[1:])
+            self.ids = np.array([country['country_code'] for country in self.locations])
+            
 
 
     def update_database(self):
@@ -21,7 +39,24 @@ class Database:
         self.allData = covid19.getAll()
         self.total = self.allData['latest']
         self.locations = self.allData['locations']
-        self.ids = [country['country_code'] for country in self.locations]
+        self.ids = np.array([country['country_code'] for country in self.locations])
+        
+        for _ in range(len(self.ids)):
+            for ID in self.ids:
+                indx = np.where(self.ids == ID)[0]
+                
+                if len(indx) > 1:
+                    base = self.locations[indx[0]]
+
+                    for i in indx[1:]:
+                        for dia in self.locations[i]['timelines']['confirmed']['timeline']:
+                            base['timelines']['confirmed']['timeline'][dia] += self.locations[i]['timelines']['confirmed']['timeline'][dia]
+
+                    self.locations[indx[0]] = base
+                    break
+            
+            self.locations = np.delete(self.locations, indx[1:])
+            self.ids = np.array([country['country_code'] for country in self.locations])
 
     def populate_charts(self):
 
@@ -98,9 +133,9 @@ class Chart:
             plt.xlabel("Number of days since 100 cases")
             plt.ylabel("Total number of cases  (log sacale) ")
             plt.legend(fontsize='large',markerscale=2)
-        plt.xticks(np.arange(0,m,1))
+        plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
 
-#d = Database()
-#print(d.locations[d.ids.index('BR')])
-#Chart([ d.locations[d.ids.index('BR')], d.locations[d.ids.index('MX')]])
+
+d = Database()
+Chart([ d.locations[np.where(d.ids=='CN')[0][0]], d.locations[np.where(d.ids=='KR')[0][0] ] ])
