@@ -25,7 +25,7 @@ print("Ready: Database updated")
 
 def process_msg(msg):
     usr_name = msg['from']['first_name']
-    comandos = msg['text'].split(' ',1)
+    comandos = msg['text'].split(' ')
 
     return usr_name, comandos
 
@@ -34,14 +34,14 @@ def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     bot.sendChatAction(from_id, 'upload_photo')
 
-    days          = query_data.split(' ',1)[0]
-    countryID_str = query_data.split(' ',1)[1]
+    days          = query_data.split(' ')[0]
+    countryID_str = query_data.split(' ')[1]
     if countryID_str != None:
         countryID = int(countryID_str)
         try:
             bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
         except:
-            Chart(DADOS.locations[countryID], days)
+            Chart([DADOS.locations[countryID]], days)
             bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
     else:
         #try:
@@ -62,9 +62,21 @@ def on_chat_message(msg):
         bot.sendMessage(chat_id, f"Hello {usr_name}, I can show you the stats of the covid19 from all around the world.")
 ##########################################
     if comandos[0] == '/chart':
-        countryID = DADOS.ids.index(comandos[1].upper())
+        if len(comandos) > 2:
+            countryID = [DADOS.ids.index(comandos[i].upper()) for i in range(1,len(comandos))]
 
+            name = 'compare_'
+            for i in range(1,len(comandos)):
+                name += comandos[i].upper()
+
+            try:
+                bot.sendPhoto(from_id, open(f"charts/chart_{name}.png",'rb'))
+            except:
+                Chart([DADOS.locations[i] for i in countryID])
+                bot.sendPhoto(from_id, open(f"charts/chart_{name}.png",'rb'))
         if len(comandos) == 2:
+            countryID = DADOS.ids.index(comandos[1].upper())
+
             bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                 [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID}"),
@@ -94,6 +106,11 @@ def on_chat_message(msg):
             *World*\
             \n- Total confirmed cases until today: {DADOS.total['confirmed']}\
             \n- Total deaths until today: {DADOS.total['deaths']}")
+##########################################
+    if comandos[0] == '/help':
+        bot.sendChatAction(chat_id, 'typing')
+            
+        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands are:*\n\n/help - to see this message\n\n/info <country code> - show the updated informations and stats for the covid19 for a specific country, default is information for the entirely world\n\n/chart <country code 1> <country code 2> ... - show a chart of the evolution of covid19 from the last days, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparative chart of the two countries.")
 ##########################################
 
 MessageLoop(bot, {'chat': on_chat_message,

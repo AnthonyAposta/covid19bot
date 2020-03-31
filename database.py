@@ -60,7 +60,7 @@ class Chart:
             for c in  self.data:
                 name+= c
 
-            plt.savefig(f"charts/chart_compare_{name}",bbox_inches='tight')
+            plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
         self.fig.clf()
         
@@ -98,5 +98,5 @@ class Chart:
             plt.ylabel("Total number of cases")
             print(max(plt.yticks()))
 
-d = Database()
-Chart([ d.locations[d.ids.index('BR')], d.locations[d.ids.index('MX')]])
+#d = Database()
+#Chart([ d.locations[d.ids.index('BR')], d.locations[d.ids.index('MX')]])
