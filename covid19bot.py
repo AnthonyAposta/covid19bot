@@ -61,7 +61,7 @@ def on_chat_message(msg):
     print(chat_id, f"{usr_name}: {msg['text']}")
 ##########################################
     if comandos[0] == '/start':
-        bot.sendMessage(chat_id, f"Hello {usr_name}, I can show you the stats of the covid19 from all around the world.")
+        bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statics about COVID-19.")
 ##########################################
     if comandos[0] == '/chart':
         if len(comandos) > 2:
@@ -79,14 +79,14 @@ def on_chat_message(msg):
         elif len(comandos) == 2:
             countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
 
-            bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
+            bot.sendMessage(chat_id, 'Ok, now choose how many days you want to see:',
                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                 [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID}"),
                                  InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID}")],
                                 [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID}"),
                                  InlineKeyboardButton(text="All days since first case", callback_data=f"0  {countryID}")]]))
         else:
-            bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
+            bot.sendMessage(chat_id, 'Ok, now choose how many days you want to see:',
                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                 [InlineKeyboardButton(text="10 days",                   callback_data=f"10 None"),
                                  InlineKeyboardButton(text="30 days",                   callback_data=f"30 None")],
@@ -123,7 +123,7 @@ def on_chat_message(msg):
     if comandos[0] == '/help':
         bot.sendChatAction(chat_id, 'typing')
             
-        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands are:*\n\n\n/help - to see this message\n\n/info <country code> - show the updated informations and stats for the covid19 for a specific country, default is information for the entirely world\n\n/chart <country code 1> <country code 2> ... - show a chart of the evolution of covid19 from the last days, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparative chart of the two countries\n\n/list - show the available countries and their respective code")
+        bot.sendMessage(chat_id, parse_mode='Markdown', text="*The list of available commands is:*\n\n\n/help - to see this message\n\n/info <country code> - shows the latest informations and stats for the covid19 for a specific country. By default, the global status is shown\n\n/chart <country code 1> <country code 2> ... - deploy a time evolution chart of covid19, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparison between selected countries \n\n/list - shows the available countries and their respective code")
 ##########################################
 
 MessageLoop(bot, {'chat': on_chat_message,
