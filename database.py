@@ -60,7 +60,7 @@ class Chart:
             for c in  self.data:
                 name+= c
 
-            plt.savefig(f"charts/chart_compare_{name}",bbox_inches='tight')
+            plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
         self.fig.clf()
         
@@ -86,17 +86,21 @@ class Chart:
             plt.xticks(rotation=90, size='medium')
 
     def comparative_chart(self):
-
+        m=0
         for country in self.data:
-
+    
             N = sum( self.data[country] > 100 )
             if N > 0:
-                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-' )
-            
+                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = country)
+                m = max(m,N)
+
             plt.yscale("log")
             plt.xlabel("Number of days since 100 cases")
-            plt.ylabel("Total number of cases")
-            print(max(plt.yticks()))
+            plt.ylabel("Total number of cases  (log sacale) ")
+            plt.legend(fontsize='large',markerscale=2)
+        plt.xticks(np.arange(0,m,1))
+        plt.xlim(-0.5,m)
 
-d = Database()
-Chart([ d.locations[d.ids.index('BR')], d.locations[d.ids.index('MX')]])
+#d = Database()
+#print(d.locations[d.ids.index('BR')])
+#Chart([ d.locations[d.ids.index('BR')], d.locations[d.ids.index('MX')]])
