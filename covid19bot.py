@@ -40,11 +40,10 @@ def on_callback_query(msg):
     countryID_str = query_data.split(' ')[1]
     if countryID_str != None:
         countryID = int(countryID_str)
-        try:
-            bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
-        except:
-            Chart([DADOS.locations[countryID]], days)
-            bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+        
+        Chart([DADOS.locations[countryID]], days)
+        bot.sendPhoto(from_id, open(f"charts/chart{days}_{DADOS.locations[countryID]['country_code']}.png",'rb'))
+
     else:
         #try:
         bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
