@@ -61,7 +61,7 @@ def on_chat_message(msg):
     print(chat_id, f"{usr_name}: {msg['text']}")
 ##########################################
     if comandos[0] == '/start':
-        bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statics about COVID-19.")
+        bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statics about COVID-19. type \help for a guide")
 ##########################################
     if comandos[0] == '/chart':
         if len(comandos) > 2:
