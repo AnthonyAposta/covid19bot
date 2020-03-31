@@ -1,7 +1,5 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from os import makedirs
 import COVID19Py
 
 class Database:
@@ -73,7 +71,7 @@ class Chart:
         for location in Locations_indx:
             timeline = location['timelines']['confirmed']['timeline']
             self.data[location['country_code']] = np.array([timeline[dia] for dia in timeline])
-        self.dias = np.array([dia for dia in timeline])
+        self.dias = np.array([dia[5:10] for dia in timeline])
 
 
         plt.style.use('ggplot')
@@ -98,15 +96,7 @@ class Chart:
             plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
         self.fig.clf()
-        
 
-
-    def get_data(self, N, location):
-        """ pega os dados de infectados vs dias """
-        
-        data = self.Locations['timelines']['confirmed']['timeline']
-        
-        return np.array([dia[2:10] for dia in data][-N:]), np.array([data[dia] for dia in data][-N:])
 
     def linear_acumulativo(self, period):
         """ gera o grafico acumulativo para o 'lugar'  """
@@ -138,6 +128,3 @@ class Chart:
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
 
-
-d = Database()
-Chart([ d.locations[np.where(d.ids=='CN')[0][0]], d.locations[np.where(d.ids=='KR')[0][0] ] ])
