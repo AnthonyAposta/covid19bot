@@ -10,6 +10,7 @@
 
 import COVID19Py
 import telepot
+import numpy as np
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import os
@@ -64,7 +65,7 @@ def on_chat_message(msg):
 ##########################################
     if comandos[0] == '/chart':
         if len(comandos) > 2:
-            countryID = [DADOS.ids.index(comandos[i].upper()) for i in range(1,len(comandos))]
+            countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
 
             name = 'compare_'
             for i in range(1,len(comandos)):
@@ -76,7 +77,7 @@ def on_chat_message(msg):
                 Chart([DADOS.locations[i] for i in countryID])
                 bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
         elif len(comandos) == 2:
-            countryID = DADOS.ids.index(comandos[1].upper())
+            countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
 
             bot.sendMessage(chat_id, 'Ok, now choose how many days will want to see:',
                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
@@ -96,7 +97,7 @@ def on_chat_message(msg):
     if comandos[0] == '/info':
         bot.sendChatAction(chat_id, 'typing')
         if len(comandos) == 2: # Filtered by country code
-            countryID=DADOS.ids.index(comandos[1].upper())
+            countryID=np.where(DADOS.ids == comandos[1].upper())[0][0]
             
             bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
             *{DADOS.locations[countryID]['country']}*\
@@ -116,7 +117,6 @@ def on_chat_message(msg):
             string = f"{location['country_code']}:\t{location['country']}"
             if string not in message:
                 message.append(string)
-                print(f"{location['country_code']}:\t{location['country']}")
 
         bot.sendMessage(chat_id, text="Countries list:\n"+'\n'.join(message))
 ##########################################
