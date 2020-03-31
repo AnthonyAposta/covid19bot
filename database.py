@@ -109,7 +109,7 @@ class Chart:
         for country in self.data:
             self.ax.bar(self.dias[-N:], self.data[country][-N:])
             plt.xticks(rotation=90, size='medium')
-
+        plt.ylabel("Total number of confirmed cases")
     def comparative_chart(self, location):
         m=0
 
