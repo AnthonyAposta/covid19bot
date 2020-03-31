@@ -129,5 +129,3 @@ class Chart:
         plt.xlim(-0.5,m)
 
 
-d = Database()
-Chart([  d.locations[np.where(d.ids=='KR')[0][0] ] ])
