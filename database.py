@@ -37,7 +37,6 @@ class Database:
             
             self.locations = np.delete(self.locations, indx[1:])
             self.ids = np.array([country['country_code'] for country in self.locations])
-            
 
 
     def update_database(self):
@@ -102,6 +101,16 @@ class Chart:
                 plt.savefig(f"charts/chart_{Locations_indx[0]['country_code']}",bbox_inches='tight')
             else:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
+       
+        # se todos os paises forem passados como argumto, ele cria um grafico com todos os casos do mundo
+        elif len(Locations_indx)==176:
+            self.chart = self.linear_acumulativo_world(period)
+            
+            if period == None:
+                plt.savefig(f"charts/chart_world",bbox_inches='tight')
+            else:
+                plt.savefig(f"charts/chart{period}_world",bbox_inches='tight') 
+
         #caso contrario ele gera um grafico comparando todos os paises do argumento
         else:
             self.chart = self.comparative_chart(Locations_indx)
@@ -112,6 +121,19 @@ class Chart:
             plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
         self.fig.clf()
+
+    def linear_acumulativo_world(self, period):
+
+        if period != None:
+            N = int(period)
+        else:
+            N = 0
+
+        world_infecteds = sum([ self.data[i] for i in self.data])
+        self.ax.bar(self.dias[-N:], world_infecteds[-N:])
+        plt.xticks(rotation=90, size='medium')
+        plt.ylabel("Total number of confirmed cases")
+
 
 
     def linear_acumulativo(self, period):
@@ -126,6 +148,7 @@ class Chart:
             self.ax.bar(self.dias[-N:], self.data[country][-N:])
             plt.xticks(rotation=90, size='medium')
         plt.ylabel("Total number of confirmed cases")
+    
     def comparative_chart(self, location):
         """gera o grafico comparativo"""
 
@@ -145,3 +168,6 @@ class Chart:
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
 
+d=Database()
+print('done')
+Chart(d.locations)
