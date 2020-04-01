@@ -167,7 +167,3 @@ class Chart:
             plt.legend(fontsize='large',markerscale=2)
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
-
-d=Database()
-print('done')
-Chart(d.locations)
