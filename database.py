@@ -13,6 +13,7 @@ class Database:
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
         self.locations = np.array(self.allData['locations'])
+
         self.ids = np.array([country['country_code'] for country in self.locations])
 
         #soma os casos de todas as provincias se o country_code for repetido (se country_code for repetido, significa que exitem varias provincias)
@@ -38,7 +39,14 @@ class Database:
             self.locations = np.delete(self.locations, indx[1:])
             self.ids = np.array([country['country_code'] for country in self.locations])
 
+        self.ranked = self.ranking()
 
+
+    def ranking(self):
+        confirmed = [(self.locations[i]['country'], self.locations[i]['latest']['confirmed']) for i in range(len(self.locations))]
+        return sorted(confirmed, key=lambda x: x[1], reverse=True)
+
+        
     def update_database(self):
         """Este metodo serve para atualizar o banco de dados dentro do bot, ele faz a mesma coisa q o __init___"""
 
@@ -69,6 +77,8 @@ class Database:
             
             self.locations = np.delete(self.locations, indx[1:])
             self.ids = np.array([country['country_code'] for country in self.locations])
+
+            
 
 
 class Chart:
@@ -103,7 +113,7 @@ class Chart:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
        
         # se todos os paises forem passados como argumto, ele cria um grafico com todos os casos do mundo
-        elif len(Locations_indx)==176:
+        elif len(Locations_indx)==178:
             self.chart = self.linear_acumulativo_world(period)
             
             if period == None:

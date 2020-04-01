@@ -1,16 +1,13 @@
 ##### TODO or ideas #####
 # - [x] Bot answer to any command: "Command not found. See /help."
-# - [ ] top countries infected and deltas in /info
 # - [x] /info more than one country
-# - [ ] /chart <nothing>: make world chart
+# - [x] Comment code
+# - [x] /chart <nothing>: make world chart
+# - [x] top countries infected and deltas in /info
+# - [ ] fix max number of countries
 # - [ ] /map
 # - [ ] /daily_subscribe
 # - [ ] /news
-# - [x] Comment code
-# - [x] /info
-# - [x] /graph
-# - [x] /list
-# - [x] /help
 
 import COVID19Py
 import telepot
@@ -42,26 +39,36 @@ def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     bot.sendChatAction(from_id, 'upload_photo')
 
-    days          = query_data.split(' ')[0]
+    days_str      = query_data.split(' ')[0]
     countryID_str = query_data.split(' ')[1]
-    if countryID_str != None:
+
+    if countryID_str != 'None':
         countryID = int(countryID_str)
         countryCode = DADOS.locations[countryID]['country_code']
-        
-        Chart([DADOS.locations[countryID]], days)
-        bot.sendPhoto(from_id, open(f"charts/chart{days}_{countryCode}.png",'rb'))
+
+        if days_str == 'All':
+            Chart([DADOS.locations[countryID]])
+            bot.sendPhoto(from_id, open(f"charts/chart_{countryCode}.png",'rb'))
+        else:
+            Chart([DADOS.locations[countryID]], int(days_str))
+            bot.sendPhoto(from_id, open(f"charts/chart{days_str}_{countryCode}.png",'rb'))
+            
     else:
-        #Chart(DADOS.locations[countryID], days)
-        bot.sendPhoto(from_id, open(f"charts/world.png",'rb'))
+        if days_str == 'All':
+            Chart(DADOS.locations)
+            bot.sendPhoto(from_id, open(f"charts/chart_world.png",'rb'))
+        else:
+            Chart(DADOS.locations, int(days_str))
+            bot.sendPhoto(from_id, open(f"charts/chart{days_str}_world.png",'rb'))
 
             
 # Send a message asking from how many days the user want to see in the chart, showing a inline keyboard
-def show_date_keyboard(chat_id, countryID):
+def show_date_keyboard(chat_id, countryID=None):
     bot.sendMessage(chat_id, 'Ok, now choose how many days you want to see:', reply_markup=InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID}"),
          InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID}")],
         [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID}"),
-         InlineKeyboardButton(text="All days since first case", callback_data=f"0  {countryID}")]]))
+         InlineKeyboardButton(text="All days since first case", callback_data=f"All {countryID}")]]))
 
 
 
@@ -92,7 +99,7 @@ def chart(chat_id, msg):
             Chart([DADOS.locations[i] for i in countryID])
             bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
     elif len(comandos) == 2: # if the user pass just one argument (country)
-        countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]    
+        countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
         show_date_keyboard(chat_id, countryID)
     else:
         show_date_keyboard(chat_id)
@@ -127,7 +134,14 @@ def info(chat_id, msg):
         bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
         *World*\
         \n- Total confirmed cases: {DADOS.total['confirmed']}\
-        \n- Total deaths: {DADOS.total['deaths']}")
+        \n- Total deaths: {DADOS.total['deaths']}\
+        \n\
+        \n*Most infected countries:*\
+        \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
+        \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
+        \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
+        \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
+        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
 
 
 # show a list of all the countries available
