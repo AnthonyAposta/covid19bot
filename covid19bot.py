@@ -57,10 +57,10 @@ def on_callback_query(msg):
             
     else:
         if days_str == 'All':
-            Chart(DADOS.locations)
+            Chart(DADOS.locations, w=True)
             bot.sendPhoto(group_id, open(f"charts/chart_world.png",'rb'))
         else:
-            Chart(DADOS.locations, int(days_str))
+            Chart(DADOS.locations, int(days_str), w=True)
             bot.sendPhoto(group_id, open(f"charts/chart{days_str}_world.png",'rb'))
 
             
