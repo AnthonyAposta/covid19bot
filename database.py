@@ -113,7 +113,7 @@ class Chart:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
        
         # se todos os paises forem passados como argumto, ele cria um grafico com todos os casos do mundo
-        elif w=True:
+        elif w == True:
             self.chart = self.linear_acumulativo_world(period)
             
             if period == None:
