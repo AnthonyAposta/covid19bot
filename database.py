@@ -86,7 +86,7 @@ class Chart:
         que foram utilizados como argumento. Países significa: elementos da lista self.locations """
         
     
-    def __init__(self, Locations_indx, period=None):
+    def __init__(self, Locations_indx, period=None, w=False):
         """ Metodos que verifica o tipo de grafico que será feito e chama a metodo que vai criar tipo de grafico escolhido """
 
         # cria um novo dicionarion, que será utilizado organizar os dados que serão plotados
@@ -113,7 +113,7 @@ class Chart:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
        
         # se todos os paises forem passados como argumto, ele cria um grafico com todos os casos do mundo
-        elif len(Locations_indx)==178:
+        elif w == True:
             self.chart = self.linear_acumulativo_world(period)
             
             if period == None:
@@ -175,5 +175,6 @@ class Chart:
             plt.xlabel("Number of days since 100 cases")
             plt.ylabel("Total number of cases  (log sacale) ")
             plt.legend(fontsize='large',markerscale=2)
+            
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
