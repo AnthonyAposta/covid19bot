@@ -95,11 +95,11 @@ def chart(chat_id, msg):
         for i in range(1,len(comandos)):
             name += comandos[i].upper()
             
-        try: # try send the chart if it is generated
-            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
-        except: # if its not generated yet
-            Chart([DADOS.locations[i] for i in countryID])
-            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        
+        # if its not generated yet
+        Chart([DADOS.locations[i] for i in countryID])
+        bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+    
     elif len(comandos) == 2: # if the user pass just one argument (country)
         countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
         show_date_keyboard(chat_id, countryID)
