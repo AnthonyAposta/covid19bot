@@ -37,10 +37,12 @@ def process_msg(msg):
 # To handle with the response from inline keyboard action
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    bot.sendChatAction(from_id, 'upload_photo')
 
     days_str      = query_data.split(' ')[0]
     countryID_str = query_data.split(' ')[1]
+    group_id      = int(query_data.split(' ')[2])
+
+    bot.sendChatAction(group_id, 'upload_photo')
 
     if countryID_str != 'None':
         countryID = int(countryID_str)
@@ -48,27 +50,27 @@ def on_callback_query(msg):
 
         if days_str == 'All':
             Chart([DADOS.locations[countryID]])
-            bot.sendPhoto(from_id, open(f"charts/chart_{countryCode}.png",'rb'))
+            bot.sendPhoto(group_id, open(f"charts/chart_{countryCode}.png",'rb'))
         else:
             Chart([DADOS.locations[countryID]], int(days_str))
-            bot.sendPhoto(from_id, open(f"charts/chart{days_str}_{countryCode}.png",'rb'))
+            bot.sendPhoto(group_id, open(f"charts/chart{days_str}_{countryCode}.png",'rb'))
             
     else:
         if days_str == 'All':
             Chart(DADOS.locations)
-            bot.sendPhoto(from_id, open(f"charts/chart_world.png",'rb'))
+            bot.sendPhoto(group_id, open(f"charts/chart_world.png",'rb'))
         else:
             Chart(DADOS.locations, int(days_str))
-            bot.sendPhoto(from_id, open(f"charts/chart{days_str}_world.png",'rb'))
+            bot.sendPhoto(group_id, open(f"charts/chart{days_str}_world.png",'rb'))
 
             
 # Send a message asking from how many days the user want to see in the chart, showing a inline keyboard
 def show_date_keyboard(chat_id, countryID=None):
     bot.sendMessage(chat_id, 'Ok, now choose how many days you want to see:', reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID}"),
-         InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID}")],
-        [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID}"),
-         InlineKeyboardButton(text="All days since first case", callback_data=f"All {countryID}")]]))
+        [InlineKeyboardButton(text="10 days",                   callback_data=f"10 {countryID} {chat_id}"),
+         InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID} {chat_id}")],
+        [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID} {chat_id}"),
+         InlineKeyboardButton(text="All days since first case", callback_data=f"All {countryID} {chat_id}")]]))
 
 
 
@@ -182,19 +184,19 @@ def on_chat_message(msg):
     # show message send to bot
     print(chat_id, f"{usr_name}: {msg['text']}")
     
-    if comandos[0] == '/start':
+    if comandos[0] == '/start' or comandos[0] == '/start@cov19brbot':
         start(chat_id, msg)
 
-    elif comandos[0] == '/chart':
+    elif comandos[0] == '/chart' or comandos[0] == '/chart@cov19brbot':
         chart(chat_id, msg)
         
-    elif comandos[0] == '/info':
+    elif comandos[0] == '/info' or comandos[0] == '/info@cov19brbot':
         info(chat_id, msg)
         
-    elif comandos[0] == '/list':
+    elif comandos[0] == '/list' or comandos[0] == '/list@cov19brbot':
         list_countries(chat_id, msg)
         
-    elif comandos[0] == '/help':
+    elif comandos[0] == '/help' or comandos[0] == '/help@cov19brbot':
         help_msg(chat_id, msg)
 
     else:
