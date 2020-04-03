@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import COVID19Py
+import schedule
 
 class Database:
     """ A classe Database serve para pegar os dados utilizando a API COVID19Py e tratar os dados da maneira necessari
@@ -40,6 +41,8 @@ class Database:
             self.ids = np.array([country['country_code'] for country in self.locations])
 
         self.ranked = self.ranking()
+    
+        self.sched_update()
 
 
     def ranking(self):
@@ -50,12 +53,15 @@ class Database:
     def update_database(self):
         """Este metodo serve para atualizar o banco de dados dentro do bot, ele faz a mesma coisa q o __init___"""
 
+        # pega os dados da API
         covid19 = COVID19Py.COVID19(data_source="jhu")
-        self.allData = covid19.getAll()
+        self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
-        self.locations = self.allData['locations']
+        self.locations = np.array(self.allData['locations'])
+
         self.ids = np.array([country['country_code'] for country in self.locations])
-        
+
+        #soma os casos de todas as provincias se o country_code for repetido (se country_code for repetido, significa que exitem varias provincias)
         for _ in range(len(self.ids)):
             for ID in self.ids:
                 indx = np.where(self.ids == ID)[0]
@@ -67,7 +73,7 @@ class Database:
 
                         base['latest']['deaths'] +=  self.locations[i]['latest']['deaths']
                         base['latest']['confirmed'] +=  self.locations[i]['latest']['confirmed']
-
+                        
                         for dia in self.locations[i]['timelines']['confirmed']['timeline']:
                             base['timelines']['confirmed']['timeline'][dia] += self.locations[i]['timelines']['confirmed']['timeline'][dia]
                         
@@ -77,6 +83,18 @@ class Database:
             
             self.locations = np.delete(self.locations, indx[1:])
             self.ids = np.array([country['country_code'] for country in self.locations])
+
+        self.ranked = self.ranking()
+        
+        print('Database is up to date!')
+
+    def sched_update(self):
+
+        schedule.every().day.at("00:30").do(self.update_database) 
+    
+    def run_update(self):
+
+        schedule.run_pending()
 
             
 
