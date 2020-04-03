@@ -18,7 +18,9 @@ import os
 import subprocess
 import time
 from database import Database, Chart
+import datetime
 
+print(datetime.datetime.now())
 token = os.getenv("COV19BOT_TOKEN")
 bot = telepot.Bot(token)
 
