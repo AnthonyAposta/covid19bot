@@ -210,3 +210,4 @@ MessageLoop(bot, {'chat': on_chat_message,
 
 while 1:
     time.sleep(10)
+    DADOS.run_update()
