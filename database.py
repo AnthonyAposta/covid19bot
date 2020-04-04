@@ -2,6 +2,65 @@ import numpy as np
 import matplotlib.pyplot as plt
 import COVID19Py
 import schedule
+import sqlite3 as lite
+
+class subs_db:
+    """ Essa classe tem a função de criar, remover e acessar os dados de usuários que querem receber notificações diárias do bot """
+
+    def __init__(self):
+        self.con = self.connect()
+        
+        cur = self.con.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS subscribers(id INT UNIQUE, name TEXT UNIQUE)")
+        self.con.commit()
+        
+
+    # Connect to database 
+    def connect(self):
+        try:
+            connect_id = lite.connect('subscribers.db')
+            return connect_id
+        
+        except lite.Error:
+            raise(lite.Error)
+
+
+    # function to add a new user
+    def add(self, chat_id, name):
+        try:
+            self.con = self.connect()
+            cur = self.con.cursor()
+            cur.execute("INSERT INTO subscribers VALUES(?,?)", (chat_id, name))
+            self.con.commit()
+            return 0
+
+        except lite.IntegrityError:
+            return 1
+        
+            
+    # function to delete a user from subscription list
+    def remove(self, chat_id, name):
+        self.con = self.connect()
+        cur = self.con.cursor()
+        cur.execute("DELETE FROM subscribers WHERE id=? AND name=?", (chat_id, name))
+        self.con.commit()
+
+        if cur.rowcount < 1:
+            return 1
+        else:
+            return 0
+
+
+    # function to take the list of subscribers
+    def subscribers(self):
+        self.con = self.connect()
+
+        cur = self.con.cursor()
+        cur.execute('SELECT * FROM subscribers')
+        subs = cur.fetchall()
+
+        return subs
+        
 
 class Database:
     """ A classe Database serve para pegar os dados utilizando a API COVID19Py e tratar os dados da maneira necessari
@@ -88,20 +147,13 @@ class Database:
         
         print('Database is up to date!')
 
+        
     def sched_update(self):
-
         schedule.every().day.at("00:30").do(self.update_database)
-        schedule.every().day.at("01:00").do(self.update_database) 
-        schedule.every().day.at("01:30").do(self.update_database)
-        schedule.every().day.at("02:00").do(self.update_database)
-        schedule.every().day.at("02:30").do(self.update_database)
-        schedule.every().day.at("03:00").do(self.update_database)
-    
+
+        
     def run_update(self):
-
         schedule.run_pending()
-
-            
 
 
 class Chart:
@@ -109,7 +161,7 @@ class Chart:
         que foram utilizados como argumento. Países significa: elementos da lista self.locations """
         
     
-    def __init__(self, Locations_indx, period=None, w=False):
+    def __init__(self, Locations_indx, period=None, WORLD=False, COMPARATIVE=False, TRAJECTORY=False, EXP=False):
         """ Metodos que verifica o tipo de grafico que será feito e chama a metodo que vai criar tipo de grafico escolhido """
 
         # cria um novo dicionarion, que será utilizado organizar os dados que serão plotados
@@ -127,7 +179,7 @@ class Chart:
 
         # se o argumento for apenas um pais, ele cria um grafico em barras desse pais,
         #  onde periodo é quantidade de dias que serão mostradas no gráfico
-        if len(Locations_indx) == 1:        
+        if  EXP:        
             self.chart = self.linear_acumulativo(period)
 
             if period == None:
@@ -135,8 +187,8 @@ class Chart:
             else:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
        
-        # se todos os paises forem passados como argumto, ele cria um grafico com todos os casos do mundo
-        elif w == True:
+        # gera um grafico com os dados de todo o mundo
+        elif WORLD:
             self.chart = self.linear_acumulativo_world(period)
             
             if period == None:
@@ -144,8 +196,8 @@ class Chart:
             else:
                 plt.savefig(f"charts/chart{period}_world",bbox_inches='tight') 
 
-        #caso contrario ele gera um grafico comparando todos os paises do argumento
-        else:
+        # gera um grafico comparando varios países
+        elif COMPARATIVE:
             self.chart = self.comparative_chart(Locations_indx)
             name = 'compare_'
             for c in  self.data:
@@ -153,6 +205,18 @@ class Chart:
 
             plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
+        #gera um gréfico fe trajetoria de um ou mais países
+        elif TRAJECTORY:
+            self.chart = self.trajectory_chart(Locations_indx)
+
+            name = 'traj_'
+            for c in  self.data:
+                name+= c
+
+            plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
+        else:
+            raise("to create a chart one of the given parameters must be True: WORLD=False, COMPARATIVE=False, TRAJECTORY=False, EXP=False ")
+
         self.fig.clf()
 
     def linear_acumulativo_world(self, period):
@@ -166,8 +230,6 @@ class Chart:
         self.ax.bar(self.dias[-N:], world_infecteds[-N:])
         plt.xticks(rotation=90, size='medium')
         plt.ylabel("Total number of confirmed cases")
-
-
 
     def linear_acumulativo(self, period):
         """ gera o grafico acumulativo"""
@@ -186,13 +248,13 @@ class Chart:
         """gera o grafico comparativo"""
 
         m=0
-        i=0
         for country in self.data:            
             N = sum( self.data[country] > 100 )
             if N > 0:
-                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = location[i]['country'])
+                country_index = list(self.data.keys()).index(country)
+                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = location[country_index]['country'])
                 m = max(m,N)
-            i+=1
+            
 
             plt.yscale("log")
             plt.xlabel("Number of days since 100 cases")
@@ -201,3 +263,32 @@ class Chart:
             
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
+    
+    def trajectory_chart(self, location):
+        
+        for country in self.data:
+            N = sum( self.data[country] > 100 )
+            D = self.data[country][-N:]
+            
+            P_DAYS = 4
+            N_DAYS = N
+            
+            DAYS_RANGE = N_DAYS - (N_DAYS%P_DAYS)
+            
+            D = self.data[country][-DAYS_RANGE:]
+
+            Y = np.array([D[i] - D[i-P_DAYS] for i in np.arange(P_DAYS, DAYS_RANGE, P_DAYS)])
+            X = D[ np.arange(P_DAYS, DAYS_RANGE, P_DAYS) ]
+            N = X[-1]
+
+            country_index = list(self.data.keys()).index(country)
+            self.ax.plot(X,Y, '--',c='black', alpha=0.5, ms=5.0)
+            self.ax.plot(X[-1], Y[-1], 'o-' , ms=5.0, label = location[country_index]['country'])
+        
+        plt.xlabel('Total number of cases')
+        plt.ylabel(f'Number of casases in the last {P_DAYS} days')
+        plt.legend(fontsize='large',markerscale=2)
+        plt.yscale("log")
+        plt.xscale("log")
+ 
+
