@@ -90,7 +90,12 @@ class Database:
 
     def sched_update(self):
 
-        schedule.every().day.at("00:30").do(self.update_database) 
+        schedule.every().day.at("00:30").do(self.update_database)
+        schedule.every().day.at("01:00").do(self.update_database) 
+        schedule.every().day.at("01:30").do(self.update_database)
+        schedule.every().day.at("02:00").do(self.update_database)
+        schedule.every().day.at("02:30").do(self.update_database)
+        schedule.every().day.at("03:00").do(self.update_database)
     
     def run_update(self):
 
