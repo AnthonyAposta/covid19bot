@@ -4,3 +4,4 @@ COVID19Py
 telepot
 requests
 schedule
+sqlite3
