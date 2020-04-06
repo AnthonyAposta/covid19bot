@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import COVID19Py
 import schedule
-import sqlite3 as lite
+#import sqlite3 as lite
+import psycopg2 as pg
+
+DATABASE_URL = os.environ['DATABASE_URL']
 
 class subs_db:
     """ Essa classe tem a função de criar, remover e acessar os dados de usuários que querem receber notificações diárias do bot """
@@ -18,11 +21,11 @@ class subs_db:
     # Connect to database 
     def connect(self):
         try:
-            connect_id = lite.connect('subscribers.db')
+            connect_id = pg.connect(DATABASE_URL, sslmode='require')
             return connect_id
         
-        except lite.Error:
-            raise(lite.Error)
+        except pg.Error:
+            raise(pg.Error)
 
 
     # function to add a new user
@@ -30,11 +33,11 @@ class subs_db:
         try:
             self.con = self.connect()
             cur = self.con.cursor()
-            cur.execute("INSERT INTO subscribers VALUES(?,?)", (chat_id, name))
+            cur.execute("INSERT INTO subscribers VALUES(%s,%s)", (chat_id, name))
             self.con.commit()
             return 0
 
-        except lite.IntegrityError:
+        except pg.IntegrityError:
             return 1
         
             
@@ -42,7 +45,7 @@ class subs_db:
     def remove(self, chat_id, name):
         self.con = self.connect()
         cur = self.con.cursor()
-        cur.execute("DELETE FROM subscribers WHERE id=? AND name=?", (chat_id, name))
+        cur.execute("DELETE FROM subscribers WHERE id=%s AND name=%s", (chat_id, name))
         self.con.commit()
 
         if cur.rowcount < 1:
