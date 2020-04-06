@@ -4,3 +4,4 @@ COVID19Py
 telepot
 requests
 schedule
+psycopg2-binary

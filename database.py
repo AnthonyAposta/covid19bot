@@ -2,6 +2,68 @@ import numpy as np
 import matplotlib.pyplot as plt
 import COVID19Py
 import schedule
+import os
+import psycopg2 as pg
+
+DATABASE_URL = os.environ['DATABASE_URL']
+
+class subs_db:
+    """ Essa classe tem a função de criar, remover e acessar os dados de usuários que querem receber notificações diárias do bot """
+
+    def __init__(self):
+        self.con = self.connect()
+        
+        cur = self.con.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS subscribers(id INT UNIQUE, name TEXT UNIQUE)")
+        self.con.commit()
+        
+
+    # Connect to database 
+    def connect(self):
+        try:
+            connect_id = pg.connect(DATABASE_URL, sslmode='require')
+            return connect_id
+        
+        except pg.Error:
+            raise(pg.Error)
+
+
+    # function to add a new user
+    def add(self, chat_id, name):
+        try:
+            self.con = self.connect()
+            cur = self.con.cursor()
+            cur.execute("INSERT INTO subscribers VALUES(%s,%s)", (chat_id, name))
+            self.con.commit()
+            return 0
+
+        except pg.IntegrityError:
+            return 1
+        
+            
+    # function to delete a user from subscription list
+    def remove(self, chat_id, name):
+        self.con = self.connect()
+        cur = self.con.cursor()
+        cur.execute("DELETE FROM subscribers WHERE id=%s AND name=%s", (chat_id, name))
+        self.con.commit()
+
+        if cur.rowcount < 1:
+            return 1
+        else:
+            return 0
+
+
+    # function to take the list of subscribers
+    def subscribers(self):
+        self.con = self.connect()
+
+        cur = self.con.cursor()
+        cur.execute('SELECT * FROM subscribers')
+        subs = cur.fetchall()
+
+        return subs
+        
 
 class Database:
     """ A classe Database serve para pegar os dados utilizando a API COVID19Py e tratar os dados da maneira necessari
@@ -88,20 +150,13 @@ class Database:
         
         print('Database is up to date!')
 
+        
     def sched_update(self):
-
         schedule.every().day.at("00:30").do(self.update_database)
-        schedule.every().day.at("01:00").do(self.update_database) 
-        schedule.every().day.at("01:30").do(self.update_database)
-        schedule.every().day.at("02:00").do(self.update_database)
-        schedule.every().day.at("02:30").do(self.update_database)
-        schedule.every().day.at("03:00").do(self.update_database)
-    
+
+        
     def run_update(self):
-
         schedule.run_pending()
-
-            
 
 
 class Chart:
