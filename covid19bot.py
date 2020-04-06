@@ -90,27 +90,39 @@ def start(chat_id, msg):
 
     bot.sendMessage(chat_id, f"Hello {usr_name}, Worldwide statistics about COVID-19. type /help for a guide")
 
-    
 # make a graphics
 def chart(chat_id, msg):
     usr_name, comandos = process_msg(msg)
     
     if len(comandos) > 2: # if the user pass more than two arguments to chart
-        countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
 
-        # make a string with the country codes
-        name = 'compare_'
-        for i in range(1,len(comandos)):
-            name += comandos[i].upper()
+        try:
+            countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+
+            # make a string with the country codes
+            name = 'compare_'
+            for i in range(1,len(comandos)):
+                name += comandos[i].upper()
+                
             
+            # if its not generated yet
+            Chart([DADOS.locations[i] for i in countryID], COMPARATIVE=True)
+            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
         
-        # if its not generated yet
-        Chart([DADOS.locations[i] for i in countryID], COMPARATIVE=True)
-        bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        except:
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
     
     elif len(comandos) == 2: # if the user pass just one argument (country)
-        countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
-        show_date_keyboard(chat_id, countryID)
+        
+        try:
+            countryID = np.where(DADOS.ids == comandos[1].upper())[0][0]
+            show_date_keyboard(chat_id, countryID)
+        
+        except:
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
+    
     else:
         show_date_keyboard(chat_id)
 
@@ -120,17 +132,24 @@ def chart2(chat_id, msg):
     usr_name, comandos = process_msg(msg)
     
     if len(comandos) >= 2: # if the user pass more than two arguments to chart
-        countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
-
-        # make a string with the country codes
-        name = 'traj_'
-        for i in range(1,len(comandos)):
-            name += comandos[i].upper()
-            
         
-        # if its not generated yet
-        Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
-        bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        try:
+            countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+
+            # make a string with the country codes
+            name = 'traj_'
+            for i in range(1,len(comandos)):
+                name += comandos[i].upper()
+                
+            
+            # if its not generated yet
+            Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
+            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+        
+        except:
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
+
         
     else:
         bot.sendChatAction(chat_id, 'typing')
@@ -145,23 +164,35 @@ def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
     bot.sendChatAction(chat_id, 'typing')
     
     if len(comandos) > 2: # if the user pass more than two countries
-        countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
 
-        message = []
-        for i in countryID:
-            message.append(f"*{DADOS.locations[i]['country']}*\
-            \n- Total confirmed cases: {DADOS.locations[i]['latest']['confirmed']}\
-            \n- Total deaths: {DADOS.locations[i]['latest']['deaths']}")
-            
-        bot.sendMessage(chat_id, parse_mode='Markdown', text='\n\n'.join(message))
+        try:
+            countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
+
+            message = []
+            for i in countryID:
+                message.append(f"*{DADOS.locations[i]['country']}*\
+                \n- Total confirmed cases: {DADOS.locations[i]['latest']['confirmed']}\
+                \n- Total deaths: {DADOS.locations[i]['latest']['deaths']}")
+                
+            bot.sendMessage(chat_id, parse_mode='Markdown', text='\n\n'.join(message))
+        
+        except:
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
     
     elif len(comandos) == 2: # Filtered by country code
-        countryID=np.where(DADOS.ids == comandos[1].upper())[0][0]
+
+        try:
+            countryID=np.where(DADOS.ids == comandos[1].upper())[0][0]
+            
+            bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+            *{DADOS.locations[countryID]['country']}*\
+            \n- Total confirmed cases: {DADOS.locations[countryID]['latest']['confirmed']}\
+            \n- Total deaths: {DADOS.locations[countryID]['latest']['deaths']}")
         
-        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
-        *{DADOS.locations[countryID]['country']}*\
-        \n- Total confirmed cases: {DADOS.locations[countryID]['latest']['confirmed']}\
-        \n- Total deaths: {DADOS.locations[countryID]['latest']['deaths']}")
+        except:
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
         
     else: # World total cases
         bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
