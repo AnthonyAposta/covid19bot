@@ -20,6 +20,8 @@ import time
 from database import Database, Chart, subs_db
 import schedule
 
+
+
 token = os.getenv("COV19BOT_TOKEN")
 bot = telepot.Bot(token)
 
