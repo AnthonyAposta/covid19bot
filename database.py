@@ -289,7 +289,7 @@ class Chart:
             self.ax.plot(X[-1], Y[-1], 'o-' , ms=5.0, label = location[country_index]['country'])
         
         plt.xlabel('Total number of cases')
-        plt.ylabel(f'Number of casases in the last {P_DAYS} days')
+        plt.ylabel(f'Number of cases in the last {P_DAYS} days')
         plt.legend(fontsize='large',markerscale=2)
         plt.yscale("log")
         plt.xscale("log")
