@@ -229,8 +229,6 @@ class Chart:
             X = D[ np.arange(P_DAYS, DAYS_RANGE, P_DAYS) ]
             N = X[-1]
 
-            print(X)
-            print(Y)
             country_index = list(self.data.keys()).index(country)
             self.ax.plot(X,Y, '--',c='black', alpha=0.5, ms=5.0)
             self.ax.plot(X[-1], Y[-1], 'o-' , ms=5.0, label = location[country_index]['country'])
