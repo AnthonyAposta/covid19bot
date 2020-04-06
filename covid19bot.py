@@ -1,11 +1,5 @@
 ##### TODO or ideas #####
 #
-# - [x] /subscribe
-# - [x] take care of errors in subscribe: Already subscribed 
-# - [x] add subscribe/unsubscribe in /help and in botfather
-#
-# - [x] need to fix charts for the w=True?
-#
 # - [ ] /map
 # - [ ] /news
 
