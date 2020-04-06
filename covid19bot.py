@@ -143,9 +143,14 @@ def chart2(chat_id, msg):
                 name += comandos[i].upper()
                 
             
-            # if its not generated yet
-            Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
-            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+            try:
+                Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
+                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+            
+            except:
+                bot.sendChatAction(chat_id, 'typing')
+                bot.sendMessage(chat_id, text="Number of cases is less than 100.\n")
+
         
         except:
             bot.sendChatAction(chat_id, 'typing')
