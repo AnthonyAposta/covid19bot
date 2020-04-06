@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import COVID19Py
 import schedule
-#import sqlite3 as lite
+import os
 import psycopg2 as pg
 
 DATABASE_URL = os.environ['DATABASE_URL']
