@@ -40,13 +40,13 @@ class subs_db:
 
         except pg.IntegrityError:
             return 1
-        
+            
             
     # function to delete a user from subscription list
     def remove(self, chat_id, name):
         self.con = self.connect()
         cur = self.con.cursor()
-        cur.execute("DELETE FROM subscribers WHERE id=%s AND name=%s", (chat_id, name))
+        cur.execute("DELETE FROM subscribers WHERE id=%s", (chat_id,))
         self.con.commit()
 
         if cur.rowcount < 1:
