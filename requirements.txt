@@ -4,4 +4,4 @@ COVID19Py
 telepot
 requests
 schedule
-sqlite3
+psycopg2-binary
