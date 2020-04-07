@@ -14,8 +14,6 @@ import time
 from database import Database, Chart, subs_db
 import schedule
 
-
-
 token = os.getenv("COV19BOT_TOKEN")
 
 bot = telepot.Bot(token)
@@ -77,7 +75,7 @@ def send_subscribe_msg():
     subscribers = SUBS.subscribers()
 
     for sub in subscribers:
-        print(sub)
+        print("* Notifying subscribers:\n"+sub)
         chat_id = sub[0]
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
@@ -345,7 +343,7 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("23:40").do(send_subscribe_msg)
+schedule.every().day.at("11:00").do(send_subscribe_msg)
 
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
