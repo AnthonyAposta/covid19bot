@@ -252,22 +252,30 @@ class Chart:
     def comparative_chart(self, location):
         """gera o grafico comparativo"""
 
-        m=0
+        x_max = 0
+        y_max = 0
         for country in self.data:            
             N = sum( self.data[country] > 100 )
             if N > 0:
                 country_index = list(self.data.keys()).index(country)
                 self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = location[country_index]['country'],  c=self.colors[country_index])
-                m = max(m,N)
-            
+                x_max = max(x_max,N)
+                y_max = max(y_max,max(self.data[country][-N:]))
 
-            plt.yscale("log")
-            plt.xlabel("Number of days since 100 cases")
-            plt.ylabel("Total number of cases  (log sacale) ")
-            plt.legend(fontsize='large',markerscale=1)
+        double = lambda x,i: np.exp(x*np.log(2)/i)       
+        
+        self.ax.plot( [0,x_max],[100,100*double(x_max,2)], '-.', label='Cases doubling every 2 days', c='black', alpha=0.5)
+        self.ax.plot( [0,x_max],[100,100*double(x_max,3)], '--', label='... every 3 days', c='black', alpha=0.5)
+        self.ax.plot( [0,x_max],[100,100*double(x_max,7)], '-', label='... every week', c='black', alpha=0.5)   
+        
+        plt.yscale("log")
+        plt.xlabel("Number of days since 100 cases")
+        plt.ylabel("Total number of cases  (log sacale) ")
+        plt.legend(fontsize='large',markerscale=1)
             
-        plt.xticks(np.arange(0,m,2))
-        plt.xlim(-0.5,m)
+        plt.xticks(np.arange(0,x_max,2))
+        plt.xlim(-0.5,x_max)
+        plt.ylim(100,y_max*1.5)
     
     def trajectory_chart(self, location):
         
