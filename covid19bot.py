@@ -18,7 +18,6 @@ import schedule
 
 token = os.getenv("COV19BOT_TOKEN")
 
-
 bot = telepot.Bot(token)
 
 SUBS = subs_db()
@@ -29,14 +28,12 @@ print("* Database updated")
 
 print("Ready!")
 
-
 # Process the received message, spliting it in the user name and the command arguments 
 def process_msg(msg):
     usr_name = msg['from']['first_name']
     comandos = msg['text'].split(' ')
 
     return usr_name, comandos
-
 
 # To handle with the response from inline keyboard action
 def on_callback_query(msg):
@@ -66,8 +63,7 @@ def on_callback_query(msg):
         else:
             Chart(DADOS.locations, int(days_str), WORLD=True)
             bot.sendPhoto(group_id, open(f"charts/chart{days_str}_world.png",'rb'))
-
-            
+         
 # Send a message asking from how many days the user want to see in the chart, showing a inline keyboard
 def show_date_keyboard(chat_id, countryID=None):
     bot.sendMessage(chat_id, 'Ok, now choose how many days you want to see:', reply_markup=InlineKeyboardMarkup(inline_keyboard=[
@@ -75,7 +71,6 @@ def show_date_keyboard(chat_id, countryID=None):
          InlineKeyboardButton(text="30 days",                   callback_data=f"30 {countryID} {chat_id}")],
         [InlineKeyboardButton(text="60 days",                   callback_data=f"60 {countryID} {chat_id}"),
          InlineKeyboardButton(text="All days since first case", callback_data=f"All {countryID} {chat_id}")]]))
-
 
 # show informations
 def send_subscribe_msg():
@@ -94,8 +89,8 @@ def send_subscribe_msg():
         \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
         \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
         \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
-        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")        
-
+        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
+        
 ######################### BOT COMMANDS ###########################
 
 # show a welcome message and init the bot 
@@ -126,14 +121,7 @@ def chart(chat_id, msg):
         except:
             bot.sendChatAction(chat_id, 'typing')
             bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
-        
 
-            
-        
-        # if its not generated yet
-        Chart([DADOS.locations[i] for i in countryID], COMPARATIVE=True)
-        bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
-    
     elif len(comandos) == 2: # if the user pass just one argument (country)
         
         try:
@@ -147,9 +135,9 @@ def chart(chat_id, msg):
     else:
         show_date_keyboard(chat_id)
 
-
 # make a graphics
 def chart2(chat_id, msg):
+
     usr_name, comandos = process_msg(msg)
     
     if len(comandos) >= 2: # if the user pass more than two arguments to chart
@@ -162,7 +150,6 @@ def chart2(chat_id, msg):
             for i in range(1,len(comandos)):
                 name += comandos[i].upper()
                 
-            
             try:
                 Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
                 bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
@@ -171,20 +158,18 @@ def chart2(chat_id, msg):
                 bot.sendChatAction(chat_id, 'typing')
                 bot.sendMessage(chat_id, text="Number of cases is less than 100.\n")
 
-        
         except:
             bot.sendChatAction(chat_id, 'typing')
             bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
 
-        
     else:
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, text="This command needs arguments.\n")
-
-        
-        
+     
 # show informations
 def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
+    """show informations"""
+
     usr_name, comandos = process_msg(msg)
     
     bot.sendChatAction(chat_id, 'typing')
@@ -192,10 +177,12 @@ def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
     if len(comandos) > 2: # if the user pass more than two countries
 
         try:
+
             countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
 
             message = []
             for i in countryID:
+
                 message.append(f"*{DADOS.locations[i]['country']}*\
                 \n- Total confirmed cases: {DADOS.locations[i]['latest']['confirmed']}\
                 \n- Total deaths: {DADOS.locations[i]['latest']['deaths']}")
@@ -203,6 +190,7 @@ def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
             bot.sendMessage(chat_id, parse_mode='Markdown', text='\n\n'.join(message))
         
         except:
+
             bot.sendChatAction(chat_id, 'typing')
             bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
     
@@ -217,6 +205,7 @@ def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
             \n- Total deaths: {DADOS.locations[countryID]['latest']['deaths']}")
         
         except:
+
             bot.sendChatAction(chat_id, 'typing')
             bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
         
@@ -233,9 +222,10 @@ def info(chat_id, msg={'from': {'first_name': ''}, 'text': ''}):
         \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
         \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
     
-
 # show a list of all the countries available
 def list_countries(chat_id, msg):
+    """show a list of all the countries available"""
+
     usr_name, comandos = process_msg(msg)
 
     bot.sendChatAction(chat_id, 'typing')
@@ -248,9 +238,10 @@ def list_countries(chat_id, msg):
 
     bot.sendMessage(chat_id, text="Countries list:\n"+'\n'.join(message))
 
-
 # subscription to daily /info
 def subscribe(chat_id, msg):
+    """subscription to daily /info"""
+
     usr_name, comandos = process_msg(msg)
     
     status = SUBS.add(chat_id, usr_name)
@@ -262,9 +253,9 @@ def subscribe(chat_id, msg):
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, text="You are already subscribed.\n")        
         
-
 # unsubscription to daily /info
 def unsubscribe(chat_id, msg):
+
     usr_name, comandos = process_msg(msg)
     
     status = SUBS.remove(chat_id, usr_name)
@@ -276,14 +267,14 @@ def unsubscribe(chat_id, msg):
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, text="You are already unsubscribed.\n")
 
-
 # help message
 def help_msg(chat_id, msg):
     """send a help message in engish"""
+
     usr_name, comandos = process_msg(msg)
     
     bot.sendChatAction(chat_id, 'typing')
-            
+    
     bot.sendMessage(chat_id, parse_mode='Markdown', text="*The available commands are:*\n\n\n\
     /ajuda - Para ver esta mensagem em português\n\n\
     /help - to see this message\n\n\
@@ -353,8 +344,8 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("16:30").do(send_subscribe_msg)
-        
+schedule.every().day.at("22:40").do(send_subscribe_msg)
+
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
 
