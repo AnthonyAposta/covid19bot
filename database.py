@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
 import COVID19Py
 import schedule
 import os
@@ -39,13 +40,13 @@ class subs_db:
 
         except pg.IntegrityError:
             return 1
-            
+        
             
     # function to delete a user from subscription list
     def remove(self, chat_id, name):
         self.con = self.connect()
         cur = self.con.cursor()
-        cur.execute("DELETE FROM subscribers WHERE id=%s", (chat_id,))
+        cur.execute("DELETE FROM subscribers WHERE id=%s AND name=%s", (chat_id, name))
         self.con.commit()
 
         if cur.rowcount < 1:
@@ -166,7 +167,7 @@ class Chart:
     
     def __init__(self, Locations_indx, period=None, WORLD=False, COMPARATIVE=False, TRAJECTORY=False, EXP=False):
         """ Metodos que verifica o tipo de grafico que será feito e chama a metodo que vai criar tipo de grafico escolhido """
-
+        
         # cria um novo dicionarion, que será utilizado organizar os dados que serão plotados
         self.data = {}
         for location in Locations_indx:
@@ -175,6 +176,7 @@ class Chart:
         #lista dos dias, fica separada do dicionario dos dados, para facilitar na hora de pegas as 'keys' desse dicionario
         self.dias = np.array([dia[5:10] for dia in timeline])
 
+        self.colors = cm.rainbow(np.linspace(0,1,len(self.data.values())))
         #configura o grafico q será salvo
         plt.style.use('ggplot')
         self.fig = plt.figure(num=1, figsize = (10., 8.))
@@ -255,14 +257,14 @@ class Chart:
             N = sum( self.data[country] > 100 )
             if N > 0:
                 country_index = list(self.data.keys()).index(country)
-                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = location[country_index]['country'])
+                self.ax.plot( np.arange(N), self.data[country][-N:], 'o-', label = location[country_index]['country'],  c=self.colors[country_index])
                 m = max(m,N)
             
 
             plt.yscale("log")
             plt.xlabel("Number of days since 100 cases")
             plt.ylabel("Total number of cases  (log sacale) ")
-            plt.legend(fontsize='large',markerscale=2)
+            plt.legend(fontsize='large',markerscale=1)
             
         plt.xticks(np.arange(0,m,2))
         plt.xlim(-0.5,m)
@@ -271,26 +273,27 @@ class Chart:
         
         for country in self.data:
             N = sum( self.data[country] > 100 )
-            D = self.data[country][-N:]
-            
-            P_DAYS = 4
-            N_DAYS = N
-            
-            DAYS_RANGE = N_DAYS - (N_DAYS%P_DAYS)
-            
-            D = self.data[country][-DAYS_RANGE:]
+            if N>0:
+                D = self.data[country][-N:]
+                
+                P_DAYS = 4
+                N_DAYS = N
+                
+                DAYS_RANGE = N_DAYS - (N_DAYS%P_DAYS)
+                
+                D = self.data[country][-DAYS_RANGE:]
 
-            Y = np.array([D[i] - D[i-P_DAYS] for i in np.arange(P_DAYS, DAYS_RANGE, P_DAYS)])
-            X = D[ np.arange(P_DAYS, DAYS_RANGE, P_DAYS) ]
-            N = X[-1]
+                Y = np.array([D[i] - D[i-P_DAYS] for i in np.arange(P_DAYS, DAYS_RANGE, P_DAYS)])
+                X = D[ np.arange(P_DAYS, DAYS_RANGE, P_DAYS) ]
+                N = X[-1]
 
-            country_index = list(self.data.keys()).index(country)
-            self.ax.plot(X,Y, '--',c='black', alpha=0.5, ms=5.0)
-            self.ax.plot(X[-1], Y[-1], 'o-' , ms=5.0, label = location[country_index]['country'])
+                country_index = list(self.data.keys()).index(country)
+                self.ax.plot(X,Y, '--',c='black', alpha=0.5, ms=5.0)
+                self.ax.plot(X[-1], Y[-1], 'o-' , ms=10.0, label = location[country_index]['country'], c=self.colors[country_index] )
         
         plt.xlabel('Total number of cases')
         plt.ylabel(f'Number of cases in the last {P_DAYS} days')
-        plt.legend(fontsize='large',markerscale=2)
+        plt.legend(fontsize='large',markerscale=1)
         plt.yscale("log")
         plt.xscale("log")
  

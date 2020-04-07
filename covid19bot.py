@@ -15,6 +15,7 @@ from database import Database, Chart, subs_db
 import schedule
 
 token = os.getenv("COV19BOT_TOKEN")
+
 bot = telepot.Bot(token)
 
 SUBS = subs_db()
@@ -79,8 +80,18 @@ def send_subscribe_msg():
 
     for sub in subscribers:
         chat_id = sub[0]
-        info(chat_id)
-        
+        bot.sendChatAction(chat_id, 'typing')
+        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+        *World*\
+        \n- Total confirmed cases: {DADOS.total['confirmed']}\
+        \n- Total deaths: {DADOS.total['deaths']}\
+        \n\
+        \n*Most infected countries:*\
+        \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
+        \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
+        \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
+        \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
+        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")        
 
 ######################### BOT COMMANDS ###########################
 
@@ -142,9 +153,14 @@ def chart2(chat_id, msg):
                 name += comandos[i].upper()
                 
             
-            # if its not generated yet
-            Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
-            bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+            try:
+                Chart([DADOS.locations[i] for i in countryID], TRAJECTORY=True)
+                bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
+            
+            except:
+                bot.sendChatAction(chat_id, 'typing')
+                bot.sendMessage(chat_id, text="Number of cases is less than 100.\n")
+
         
         except:
             bot.sendChatAction(chat_id, 'typing')
@@ -307,7 +323,7 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-#schedule.every().day.at("11:00").do(send_subscribe_msg)
+schedule.every().day.at("16:30").do(send_subscribe_msg)
         
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
