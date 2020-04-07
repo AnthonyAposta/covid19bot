@@ -77,19 +77,22 @@ def send_subscribe_msg():
     subscribers = SUBS.subscribers()
 
     for sub in subscribers:
-        chat_id = sub[0]
-        bot.sendChatAction(chat_id, 'typing')
-        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
-        *World*\
-        \n- Total confirmed cases: {DADOS.total['confirmed']}\
-        \n- Total deaths: {DADOS.total['deaths']}\
-        \n\
-        \n*Most infected countries:*\
-        \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
-        \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
-        \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
-        \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
-        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
+        try:
+            chat_id = sub[0]
+            bot.sendChatAction(chat_id, 'typing')
+            bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+            *World*\
+            \n- Total confirmed cases: {DADOS.total['confirmed']}\
+            \n- Total deaths: {DADOS.total['deaths']}\
+            \n\
+            \n*Most infected countries:*\
+            \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
+            \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
+            \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
+            \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
+            \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
+        except:
+            pass
         
 ######################### BOT COMMANDS ###########################
 
