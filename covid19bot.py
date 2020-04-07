@@ -16,6 +16,7 @@ import schedule
 
 token = os.getenv("COV19BOT_TOKEN")
 
+
 bot = telepot.Bot(token)
 
 SUBS = subs_db()
@@ -96,7 +97,7 @@ def chart(chat_id, msg):
     usr_name, comandos = process_msg(msg)
     
     if len(comandos) > 2: # if the user pass more than two arguments to chart
-
+        
         try:
             countryID = [np.where(DADOS.ids == comandos[i].upper())[0][0] for i in range(1,len(comandos))]
 
@@ -113,6 +114,13 @@ def chart(chat_id, msg):
         except:
             bot.sendChatAction(chat_id, 'typing')
             bot.sendMessage(chat_id, text="Country code not found. Please check /list.\n")
+        
+
+            
+        
+        # if its not generated yet
+        Chart([DADOS.locations[i] for i in countryID], COMPARATIVE=True)
+        bot.sendPhoto(chat_id, open(f"charts/chart_{name}.png",'rb'))
     
     elif len(comandos) == 2: # if the user pass just one argument (country)
         
@@ -259,11 +267,13 @@ def unsubscribe(chat_id, msg):
 
 # help message
 def help_msg(chat_id, msg):
+    """send a help message in engish"""
     usr_name, comandos = process_msg(msg)
     
     bot.sendChatAction(chat_id, 'typing')
             
     bot.sendMessage(chat_id, parse_mode='Markdown', text="*The available commands are:*\n\n\n\
+    /ajuda - Para ver esta mensagem em português\n\n\
     /help - to see this message\n\n\
     /info br us it ... - shows the latest informations and stats for the covid19 for a set of specific countries. By default, the global status is shown. See /list.\n\n\
     /chart br us it ... - deploy a time evolution chart of covid19, the command will bring a keyboard to choose how many days you want to see, if passed more than one country, it will show a comparison between selected countries\n\n\
@@ -271,6 +281,21 @@ def help_msg(chat_id, msg):
     /subscribe - to subscribe to daily notifier\n\n\
     /unsubscribe - to unsubscribe you from the daily notifier\n\n\
     /list - shows the available countries and their respective code")
+
+def ajuda_msg(chat_id, msg):
+    """send a help message in portuguese"""
+    usr_name, comandos = process_msg(msg)
+    
+    bot.sendChatAction(chat_id, 'typing')
+            
+    bot.sendMessage(chat_id, parse_mode='Markdown', text="*Os comandos disponíveis são:*\n\n\n\
+    /ajuda - Para ver esta mensagem\n\n\
+    /info br us it ... -Mostra as últimas informações sobre COVID19 para os países especificados. Se nem um país for especificado, mostra as informações globais. Veja /list.\n\n\
+    /chart br us it ... -Cria a um gráfico da evolução temporal de um país. Se mais de um país for selecionado, mostra uma comparação entre esses países.\n\n\
+    /chart2 br us it ... - Cria um gráfico dos novos casos confirmados na última semana vs. o número total de casos.  Quando plotados desta forma, o crescimento exponencial é representado como um linha reta. Note que quase todos o países seguem um caminho muito similar de crescimento exponencial. Para mais informações acesse https://aatishb.com/covidtrends/\n\n\
+    /subscribe - Se inscreva para receber notificações diariamente\n\n\
+    /unsubscribe - Para se desinscrever\n\n\
+    /list - Mostra a lista de países disponiveis")
 
 ###################################################################
 
@@ -306,6 +331,9 @@ def on_chat_message(msg):
         
     elif comandos[0] == '/help' or comandos[0] == '/help@cov19brbot':
         help_msg(chat_id, msg)
+    
+    elif comandos[0] == '/ajuda' or comandos[0] == '/ajuda@cov19brbot':
+        ajuda_msg(chat_id, msg)
 
     else:
         bot.sendChatAction(chat_id, 'typing')
