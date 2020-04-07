@@ -91,8 +91,8 @@ def send_subscribe_msg():
         \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
         \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
         \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
-        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")        
-
+        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
+        
 ######################### BOT COMMANDS ###########################
 
 # show a welcome message and init the bot 
@@ -272,7 +272,7 @@ def help_msg(chat_id, msg):
     usr_name, comandos = process_msg(msg)
     
     bot.sendChatAction(chat_id, 'typing')
-            
+    
     bot.sendMessage(chat_id, parse_mode='Markdown', text="*The available commands are:*\n\n\n\
     /help - to see this message\n\n\
     /info br us it ... - shows the latest informations and stats for the covid19 for a set of specific countries. By default, the global status is shown. See /list.\n\n\
@@ -323,8 +323,8 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("16:30").do(send_subscribe_msg)
-        
+schedule.every().day.at("22:40").do(send_subscribe_msg)
+
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
 
