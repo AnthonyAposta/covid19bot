@@ -77,22 +77,20 @@ def send_subscribe_msg():
     subscribers = SUBS.subscribers()
 
     for sub in subscribers:
-        try:
-            chat_id = sub[0]
-            bot.sendChatAction(chat_id, 'typing')
-            bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
-            *World*\
-            \n- Total confirmed cases: {DADOS.total['confirmed']}\
-            \n- Total deaths: {DADOS.total['deaths']}\
-            \n\
-            \n*Most infected countries:*\
-            \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
-            \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
-            \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
-            \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
-            \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
-        except:
-            pass
+        print(sub)
+        chat_id = sub[0]
+        bot.sendChatAction(chat_id, 'typing')
+        bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
+        *World*\
+        \n- Total confirmed cases: {DADOS.total['confirmed']}\
+        \n- Total deaths: {DADOS.total['deaths']}\
+        \n\
+        \n*Most infected countries:*\
+        \n- {DADOS.ranked[0][0]}: {DADOS.ranked[0][1]}\
+        \n- {DADOS.ranked[1][0]}: {DADOS.ranked[1][1]}\
+        \n- {DADOS.ranked[2][0]}: {DADOS.ranked[2][1]}\
+        \n- {DADOS.ranked[3][0]}: {DADOS.ranked[3][1]}\
+        \n- {DADOS.ranked[4][0]}: {DADOS.ranked[4][1]}")
         
 ######################### BOT COMMANDS ###########################
 
@@ -347,7 +345,7 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("23:20").do(send_subscribe_msg)
+schedule.every().day.at("23:40").do(send_subscribe_msg)
 
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
