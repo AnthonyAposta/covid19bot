@@ -347,7 +347,7 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("23:10").do(send_subscribe_msg)
+schedule.every().day.at("23:20").do(send_subscribe_msg)
 
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
