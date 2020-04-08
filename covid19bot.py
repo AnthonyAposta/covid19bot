@@ -74,8 +74,9 @@ def show_date_keyboard(chat_id, countryID=None):
 def send_subscribe_msg():
     subscribers = SUBS.subscribers()
 
+    print("* Notifying subscribers:\n")
     for sub in subscribers:
-        print("* Notifying subscribers:\n"+sub)
+        print(sub)
         chat_id = sub[0]
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
@@ -343,7 +344,7 @@ def on_chat_message(msg):
 
 
 # schedule to send message every day at 11:00 UTC 
-schedule.every().day.at("11:00").do(send_subscribe_msg)
+schedule.every().day.at("14:40").do(send_subscribe_msg)
 
 MessageLoop(bot, {'chat': on_chat_message,
                   'callback_query': on_callback_query}).run_as_thread()
