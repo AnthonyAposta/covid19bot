@@ -74,8 +74,9 @@ def show_date_keyboard(chat_id, countryID=None):
 def send_subscribe_msg():
     subscribers = SUBS.subscribers()
 
+    print("* Notifying subscribers:")
     for sub in subscribers:
-        print("* Notifying subscribers:\n"+sub)
+        print(sub)
         chat_id = sub[0]
         bot.sendChatAction(chat_id, 'typing')
         bot.sendMessage(chat_id, parse_mode='Markdown', text=f"\
@@ -350,4 +351,5 @@ MessageLoop(bot, {'chat': on_chat_message,
 
 while 1:
     time.sleep(10)
+    
     DADOS.run_update()
