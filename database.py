@@ -9,7 +9,10 @@ import psycopg2 as pg
 DATABASE_URL = os.environ['DATABASE_URL']
 
 class subs_db:
-    """ Essa classe tem a função de criar, remover e acessar os dados de usuários que querem receber notificações diárias do bot """
+    """ 
+    Essa classe tem a função de criar, remover e acessar os dados de usuários que querem receber
+    notificações diárias do bot 
+    """
 
     def __init__(self):
         self.con = self.connect()
@@ -19,8 +22,8 @@ class subs_db:
         self.con.commit()
         
 
-    # Connect to database 
     def connect(self):
+        """Connect to database """
         try:
             connect_id = pg.connect(DATABASE_URL, sslmode='require')
             return connect_id
@@ -29,8 +32,9 @@ class subs_db:
             raise(pg.Error)
 
 
-    # function to add a new user
+    
     def add(self, chat_id, name):
+        """ function to add a new user """
         try:
             self.con = self.connect()
             cur = self.con.cursor()
@@ -41,9 +45,10 @@ class subs_db:
         except pg.IntegrityError:
             return 1
         
-            
-    # function to delete a user from subscription list
+    
     def remove(self, chat_id, name):
+        """ function to delete a user from subscription list """
+        
         self.con = self.connect()
         cur = self.con.cursor()
         cur.execute("DELETE FROM subscribers WHERE id=%s AND name=%s", (chat_id, name))
@@ -53,10 +58,9 @@ class subs_db:
             return 1
         else:
             return 0
-
-
-    # function to take the list of subscribers
+    
     def subscribers(self):
+        """ function to take the list of subscribers """
         self.con = self.connect()
 
         cur = self.con.cursor()
@@ -67,12 +71,23 @@ class subs_db:
         
 
 class Database:
-    """ A classe Database serve para pegar os dados utilizando a API COVID19Py e tratar os dados da maneira necessari
-        a API lança os dados separados por provincias, então foi necessario somar todas as provincias de um pais e modificar o banco de dados"""
+    """ 
+    A classe Database serve para pegar os dados utilizando a API COVID19Py e 
+    tratar os dados da maneira necessaria
+    a API lança os dados separados por provincias,
+    então foi necessario somar todas as provincias de um pais
+    e modificar o banco de dados
+    """
 
     def __init__(self):
+        """ 
+        Load data
+        Process data
+        Schedule update 
+        Calculate the ranking (coutries with worst cenarios)
+        """
 
-        # pega os dados da API
+        # Load data using the API
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
@@ -80,7 +95,8 @@ class Database:
 
         self.ids = np.array([country['country_code'] for country in self.locations])
 
-        #soma os casos de todas as provincias se o country_code for repetido (se country_code for repetido, significa que exitem varias provincias)
+        
+        # Group data by country_code and sum all cases (repeated country code means thas there is more than one province)
         for _ in range(len(self.ids)):
             for ID in self.ids:
                 indx = np.where(self.ids == ID)[0]
@@ -95,8 +111,7 @@ class Database:
                         
                         for dia in self.locations[i]['timelines']['confirmed']['timeline']:
                             base['timelines']['confirmed']['timeline'][dia] += self.locations[i]['timelines']['confirmed']['timeline'][dia]
-                        
-
+                    
                     self.locations[indx[0]] = base
                     break
             
@@ -104,7 +119,6 @@ class Database:
             self.ids = np.array([country['country_code'] for country in self.locations])
 
         self.ranked = self.ranking()
-    
         self.sched_update()
 
 
@@ -114,9 +128,11 @@ class Database:
 
         
     def update_database(self):
-        """Este metodo serve para atualizar o banco de dados dentro do bot, ele faz a mesma coisa q o __init___"""
+        """
+        Update the database at the time defined in sched_update()
+        transform the data in the same way as the __init__
+        """
 
-        # pega os dados da API
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
@@ -124,7 +140,6 @@ class Database:
 
         self.ids = np.array([country['country_code'] for country in self.locations])
 
-        #soma os casos de todas as provincias se o country_code for repetido (se country_code for repetido, significa que exitem varias provincias)
         for _ in range(len(self.ids)):
             for ID in self.ids:
                 indx = np.where(self.ids == ID)[0]
@@ -147,18 +162,15 @@ class Database:
             self.locations = np.delete(self.locations, indx[1:])
             self.ids = np.array([country['country_code'] for country in self.locations])
 
-        self.ranked = self.ranking()
-        
+        self.ranked = self.ranking() 
         print('Database is up to date!')
-
-        
+ 
     def sched_update(self):
+        """ set the update_database function to run every day at 00:30 UTC+0 """
         schedule.every().day.at("00:30").do(self.update_database)
-
-        
+ 
     def run_update(self):
         schedule.run_pending()
-
 
 class Chart:
     """ A classe Chart() recebe um ou mais paises, cria e salva um grafico. O tipo de grafico gerado depende da quantidade de paises
