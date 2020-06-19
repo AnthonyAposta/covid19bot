@@ -71,12 +71,8 @@ class subs_db:
         
 
 class Database:
-    """ 
-    A classe Database serve para pegar os dados utilizando a API COVID19Py e 
-    tratar os dados da maneira necessaria
-    a API lança os dados separados por provincias,
-    então foi necessario somar todas as provincias de um pais
-    e modificar o banco de dados
+    """
+    This class is used to load the data using the COVID19Py API and to transform this data.
     """
 
     def __init__(self):
@@ -173,67 +169,72 @@ class Database:
         schedule.run_pending()
 
 class Chart:
-    """ A classe Chart() recebe um ou mais paises, cria e salva um grafico. O tipo de grafico gerado depende da quantidade de paises
-        que foram utilizados como argumento. Países significa: elementos da lista self.locations """
-        
+    """
+    Used to create charts.\n
+    inputs: countried codes list, charts keys\n
+    When an object of this class is created, it generates a chart
+    """
     
     def __init__(self, Locations_indx, period=None, WORLD=False, COMPARATIVE=False, TRAJECTORY=False, EXP=False):
-        """ Metodos que verifica o tipo de grafico que será feito e chama a metodo que vai criar tipo de grafico escolhido """
-        
-        # cria um novo dicionarion, que será utilizado organizar os dados que serão plotados
+        """
+        Verifies what kind of chart will be generated, calls the method to generate the chart and saves it 
+        """
+
+        # creates a new dictionary, the same is used to set up the data to create the charts
         self.data = {}
         for location in Locations_indx:
             timeline = location['timelines']['confirmed']['timeline']
             self.data[location['country_code']] = np.array([timeline[dia] for dia in timeline])
-        #lista dos dias, fica separada do dicionario dos dados, para facilitar na hora de pegas as 'keys' desse dicionario
+        
+        # list of days, days are used as keys of data dictionary
         self.dias = np.array([dia[5:10] for dia in timeline])
 
+        # set up a color palette for the charts
         self.colors = cm.rainbow(np.linspace(0,1,len(self.data.values())))
-        #configura o grafico q será salvo
+        
+        # set up chart's configs
         plt.style.use('ggplot')
         self.fig = plt.figure(num=1, figsize = (10., 8.))
         self.ax  = self.fig.add_subplot(1,1,1)
 
         # se o argumento for apenas um pais, ele cria um grafico em barras desse pais,
         #  onde periodo é quantidade de dias que serão mostradas no gráfico
+
+        # if the arg is junst one countrie code, then create a bar chart
+        # 'period' is the amount of days shown in the chart
         if  EXP:        
             self.chart = self.linear_acumulativo(period)
-
             if period == None:
                 plt.savefig(f"charts/chart_{Locations_indx[0]['country_code']}",bbox_inches='tight')
             else:
                 plt.savefig(f"charts/chart{period}_{Locations_indx[0]['country_code']}",bbox_inches='tight')  
        
-        # gera um grafico com os dados de todo o mundo
+        # generates a bar chart using the world data over a given period
         elif WORLD:
             self.chart = self.linear_acumulativo_world(period)
-            
             if period == None:
                 plt.savefig(f"charts/chart_world",bbox_inches='tight')
             else:
                 plt.savefig(f"charts/chart{period}_world",bbox_inches='tight') 
 
-        # gera um grafico comparando varios países
+        # generates a comparative chart of multiple countries in log scale
         elif COMPARATIVE:
             self.chart = self.comparative_chart(Locations_indx)
             name = 'compare_'
             for c in  self.data:
                 name+= c
-
             plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         
-        #gera um gréfico fe trajetoria de um ou mais países
+        # generates the trajectory chart of one or more countries
         elif TRAJECTORY:
             self.chart = self.trajectory_chart(Locations_indx)
-
             name = 'traj_'
             for c in  self.data:
                 name+= c
-
             plt.savefig(f"charts/chart_{name}",bbox_inches='tight')
         else:
             raise("to create a chart one of the given parameters must be True: WORLD=False, COMPARATIVE=False, TRAJECTORY=False, EXP=False ")
-
+        
         self.fig.clf()
 
     def linear_acumulativo_world(self, period):
