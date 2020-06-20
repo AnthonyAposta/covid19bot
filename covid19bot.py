@@ -16,9 +16,10 @@ import schedule
 
 token = os.getenv("COV19BOT_TOKEN")
 
+
 bot = telepot.Bot(token)
 
-SUBS = subs_db()
+#SUBS = subs_db()
 print("* Subscribers database updated")
 
 DADOS = Database()
