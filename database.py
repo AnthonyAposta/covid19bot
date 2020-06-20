@@ -5,6 +5,8 @@ import COVID19Py
 import schedule
 import os
 import psycopg2 as pg
+from importlib import reload
+
 
 DATABASE_URL = os.environ['DATABASE_URL']
 
@@ -84,7 +86,6 @@ class Database:
         """
 
         # Load data using the API
-        import COVID19Py
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
@@ -129,7 +130,8 @@ class Database:
         Update the database at the time defined in sched_update()
         transform the data in the same way as the __init__
         """
-
+        import COVID19Py
+        COVID19Py = reload(COVID19Py)
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
