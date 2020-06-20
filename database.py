@@ -84,6 +84,7 @@ class Database:
         """
 
         # Load data using the API
+        import COVID19Py
         covid19 = COVID19Py.COVID19(data_source="jhu")
         self.allData = covid19.getAll(timelines=True)
         self.total = self.allData['latest']
@@ -163,7 +164,7 @@ class Database:
  
     def sched_update(self):
         """ set the update_database function to run every day at 00:30 UTC+0 """
-        schedule.every().day.at("00:30").do(self.update_database)
+        schedule.every().day.at("21:25").do(self.update_database)
  
     def run_update(self):
         schedule.run_pending()
