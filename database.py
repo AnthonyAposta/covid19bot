@@ -300,7 +300,7 @@ class Chart:
             if N>0:
                 D = self.data[country][-N:]
                 
-                P_DAYS = 4
+                P_DAYS = 7
                 N_DAYS = N
                 
                 DAYS_RANGE = N_DAYS - (N_DAYS%P_DAYS)
