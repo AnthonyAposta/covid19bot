@@ -165,8 +165,10 @@ class Database:
         print('Database is up to date!')
  
     def sched_update(self):
-        """ set the update_database function to run every day at 00:30 UTC+0 """
-        schedule.every().day.at("02:00").do(self.update_database)
+        """ set the update_database function to run every day at h:m UTC+0 """
+        schedule.every().day.at("00:00").do(self.update_database)
+        schedule.every().day.at("03:00").do(self.update_database)
+        schedule.every().day.at("06:00").do(self.update_database)
  
     def run_update(self):
         schedule.run_pending()
